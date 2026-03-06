@@ -125,7 +125,7 @@ const Room = () => {
             setRoom(response.room);
         } catch (err) {
             console.error('Failed to load room:', err);
-            navigate('/dashboard');
+            navigate('/chat');
         }
     };
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getRooms, createRoom, joinRoom } from '../api/rooms';
 
-const Dashboard = () => {
+const Chat = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [rooms, setRooms] = useState([]);
@@ -182,5 +182,5 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default Chat;
 

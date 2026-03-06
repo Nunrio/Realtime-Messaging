@@ -21,7 +21,7 @@ const Login = () => {
 
         try {
             await login(email, password);
-            navigate('/dashboard');
+            navigate('/chat');
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
             setError(errorMessage);
@@ -34,7 +34,7 @@ const Login = () => {
     const closeToast = () => setToast(null);
 
     return (
-        <div className="min-h-screen bg-[#f9fafb] flex font-poppins">
+        <div className="h-screen bg-[#f9fafb] flex font-poppins overflow-hidden">
             {toast && (
                 <Toast 
                     message={toast.message} 
@@ -43,7 +43,7 @@ const Login = () => {
                 />
             )}
             {/* Left Side - Content */}
-            <div className="w-full lg:w-1/2 flex flex-col min-h-screen">
+            <div className="w-full lg:w-1/2 flex flex-col h-full">
                 {/* Logo */}
                 <div className="p-6 lg:p-12 pt-6">
                     <img 

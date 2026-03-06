@@ -2,9 +2,8 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
+import Chat from './pages/Chat';
 import Room from './pages/Room';
-import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -12,17 +11,16 @@ function App() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {!isAuthPage && <Navbar />}
+    <div className={isAuthPage ? 'min-h-screen' : 'min-h-screen bg-gray-50'}>
       <div className={isAuthPage ? '' : 'container mx-auto px-4 py-6'}>
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route 
-            path="/dashboard" 
+            path="/chat" 
             element={
               <ProtectedRoute>
-                <Dashboard />
+                <Chat />
               </ProtectedRoute>
             } 
           />
@@ -34,7 +32,7 @@ function App() {
               </ProtectedRoute>
             } 
           />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="/" element={<Navigate to="/chat" replace />} />
         </Routes>
       </div>
     </div>
