@@ -39,12 +39,12 @@ class User {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Default values handled in SQL: role='user', gender='Prefer not to say', status='Online'
+        // Default values handled in SQL: role='user', gender='Prefer not to say', status='Online', profile_picture='/images/default-avatar.webp'
         const sql = `INSERT INTO users (username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_seen) 
-                     VALUES (?, ?, ?, ?, 'user', 'Prefer not to say', NULL, NULL, NULL, NULL, 'Online', NOW())`;
+                     VALUES (?, ?, ?, ?, 'user', 'Prefer not to say', NULL, NULL, NULL, '/images/default-avatar.webp', 'Online', NOW())`;
         const result = await db.query(sql, [
             username, 
-            display_name || username, 
+            display_name || null, 
             email, 
             hashedPassword, 
         ]);
@@ -52,7 +52,8 @@ class User {
         return {
             id: result.insertId,
             username,
-            display_name: display_name || username,
+            display_name: display_name || null,
+            profile_picture: '/images/default-avatar.webp',
             email
         };
     }

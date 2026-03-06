@@ -2,10 +2,11 @@ import React from 'react';
 import { Settings, LogOut } from './icons/sidebarIcons';
 
 const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout }) => {
-  // Get user display info - show username if display_name is null
+  // Get user display info
+  const hasDisplayName = user?.display_name !== null && user?.display_name !== undefined;
   const displayName = user?.display_name || user?.username || 'User';
   const username = user?.username || '';
-  const avatarUrl = user?.avatar || '/images/default-avatar.webp';
+  const avatarUrl = user?.profile_picture;
 
   return (
     <div className="border-t border-gray-200 p-4 relative">
@@ -34,12 +35,20 @@ const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout })
         {/* Column 2 - User Info - Only show when expanded */}
         {isExpanded && (
           <div className="ml-3">
-            <p className="text-sm font-medium text-black truncate">
-              {displayName}
-            </p>
-            {username && (
-              <p className="text-xs text-gray-600 truncate">
-                @{username}
+            {/* Show display name if it exists */}
+            {hasDisplayName ? (
+              <>
+                <p className="text-sm font-medium text-black truncate">
+                  {user.display_name}
+                </p>
+                <p className="text-xs text-gray-600 truncate">
+                  @{username}
+                </p>
+              </>
+            ) : (
+              /* Only show username if display name is null (without @) */
+              <p className="text-sm font-medium text-black truncate">
+                {username}
               </p>
             )}
           </div>

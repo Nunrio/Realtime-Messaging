@@ -29,7 +29,7 @@ const register = async (req, res) => {
         // Create user - other fields handled by database defaults
         const user = await User.create({
             username,
-            display_name: display_name || username,
+            display_name: display_name || null,
             email,
             password
         });
@@ -44,6 +44,7 @@ const register = async (req, res) => {
                 id: user.id,
                 username: user.username,
                 display_name: user.display_name,
+                profile_picture: user.profile_picture,
                 email: user.email
             }
         });
