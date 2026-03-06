@@ -4,11 +4,11 @@ const { generateToken } = require('../config/auth');
 // Register new user
 const register = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password, display_name, gender, birthday, age, bio, profile_picture } = req.body;
 
-        // Validation
+        // Validation - only require username, email, password
         if (!username || !email || !password) {
-            return res.status(400).json({ message: 'Please provide all fields' });
+            return res.status(400).json({ message: 'Please provide all required fields' });
         }
 
         if (password.length < 6) {
@@ -26,8 +26,13 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'Username already taken' });
         }
 
-        // Create user
-        const user = await User.create(username, email, password);
+        // Create user - other fields handled by database defaults
+        const user = await User.create({
+            username,
+            display_name: display_name || username,
+            email,
+            password
+        });
         
         // Generate token
         const token = generateToken(user);
@@ -38,6 +43,7 @@ const register = async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
+                display_name: user.display_name,
                 email: user.email
             }
         });
@@ -47,7 +53,7 @@ const register = async (req, res) => {
     }
 };
 
-// Login user
+// Login user (supports username or email)
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -57,8 +63,8 @@ const login = async (req, res) => {
             return res.status(400).json({ message: 'Please provide all fields' });
         }
 
-        // Find user
-        const user = await User.findByEmail(email);
+        // Find user by username or email
+        const user = await User.findByUsernameOrEmail(email);
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -78,7 +84,16 @@ const login = async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
-                email: user.email
+                display_name: user.display_name,
+                email: user.email,
+                role: user.role,
+                gender: user.gender,
+                birthday: user.birthday,
+                age: user.age,
+                bio: user.bio,
+                profile_picture: user.profile_picture,
+                status: user.status,
+                last_seen: user.last_seen
             }
         });
     } catch (error) {
@@ -100,7 +115,16 @@ const getCurrentUser = async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
+                display_name: user.display_name,
                 email: user.email,
+                role: user.role,
+                gender: user.gender,
+                birthday: user.birthday,
+                age: user.age,
+                bio: user.bio,
+                profile_picture: user.profile_picture,
+                status: user.status,
+                last_seen: user.last_seen,
                 created_at: user.created_at
             }
         });

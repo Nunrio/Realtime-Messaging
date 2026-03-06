@@ -20,10 +20,10 @@ async function resetDatabase() {
         await conn.execute('TRUNCATE TABLE users');
         await conn.execute('SET FOREIGN_KEY_CHECKS = 1');
 
-        // Insert admin user
+        // Insert admin user with all new fields
         await conn.execute(
-            'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-            ['Alias', 'admin@nunrio.dev', '$2b$10$OOfnlTPoghbL913pdDgYa.soCy2LyW6OUZPv7Y9QKV7Hnt/tzMlwC']
+            'INSERT INTO users (username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_seen) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+            ['Alias', 'Admin User', 'admin@nunrio.dev', '$2b$10$OOfnlTPoghbL913pdDgYa.soCy2LyW6OUZPv7Y9QKV7Hnt/tzMlwC', 'founder', 'Prefer not to say', '2001-05-08', 24, 'Platform administrator with full access', '/images/default-avatar.png', 'Online']
         );
 
         // Insert sample room
@@ -52,6 +52,7 @@ async function resetDatabase() {
 
         console.log('Database seeded successfully!');
         console.log('Admin credentials:');
+        console.log('  Username: Alias');
         console.log('  Email: admin@nunrio.dev');
         console.log('  Password: rmadmin@2026');
     } catch (err) {

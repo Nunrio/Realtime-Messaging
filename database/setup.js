@@ -23,6 +23,15 @@ async function setupDatabase() {
         // Use the database
         await connection.query(`USE ${process.env.DB_NAME || 'realtime_messaging'}`);
 
+        // Drop existing tables to get fresh schema
+        await connection.query('DROP TABLE IF EXISTS reactions');
+        await connection.query('DROP TABLE IF EXISTS messages');
+        await connection.query('DROP TABLE IF EXISTS notes');
+        await connection.query('DROP TABLE IF EXISTS room_members');
+        await connection.query('DROP TABLE IF EXISTS rooms');
+        await connection.query('DROP TABLE IF EXISTS users');
+        console.log('Old tables dropped');
+
         // Read and execute schema
         const schemaPath = path.join(__dirname, 'schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');

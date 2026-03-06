@@ -1,34 +1,40 @@
-# Frontend Design Update - Login & Register Pages
+# TODO: Update Users Table with Profile and Presence Fields
 
-## Plan
+## Task Summary
+Update the users table by adding new fields required for profile information and realtime presence. Also modify login to accept username or email.
 
-### 1. Update index.css
-- Add Poppins font from Google Fonts
-- Add base styles for soft white background and no-scroll on auth pages
+## Files to Modify
 
-### 2. Update tailwind.config.js
-- Add blue (#1E90FF) as primary color
-- Add Poppins font family
+### 1. database/schema.sql
+- [x] Add display_name VARCHAR NOT NULL
+- [x] Add role ENUM('user', 'moderator', 'admin', 'founder') DEFAULT 'user'
+- [x] Add gender ENUM('Male', 'Female', 'Other', 'Prefer not to say') DEFAULT 'Prefer not to say'
+- [x] Add birthday DATE NOT NULL
+- [x] Add age INT NOT NULL
+- [x] Add bio TEXT NOT NULL
+- [x] Add profile_picture VARCHAR NOT NULL
+- [x] Add status ENUM('Online', 'away', 'do not disturb', 'invisible') DEFAULT 'Online'
+- [x] Add last_seen TIMESTAMP NULL
 
-### 3. Update App.jsx
-- Conditionally hide Navbar on Login and Register pages
+### 2. database/seed.sql
+- [x] Update seed data with new fields
 
-### 4. Update Login.jsx
-- Remove Navbar (handled in App)
-- Add header with title and subtitle
-- Center content vertically/horizontally
-- Style form with rounded corners
-- Blue buttons with white text
+### 3. server/src/models/User.js
+- [x] Update findById to include new fields
+- [x] Update findByEmail to include new fields
+- [x] Update findByUsername to include new fields
+- [x] Update create method with new fields
+- [x] Update getAll to include new fields
 
-### 5. Update Register.jsx
-- Same styling as Login page
+### 4. server/src/controllers/authController.js
+- [x] Update register to accept new fields
+- [x] Update login to accept username OR email
+- [x] Update getCurrentUser to return new fields
 
-## Implementation Steps
+### 5. client/src/pages/Login.jsx
+- [x] Change email input to accept username OR email
+- [x] Update label and placeholder text
 
-- [x] 1. Update client/index.html - Add favicon logo.webp
-- [x] 2. Update client/src/index.css - Add Poppins font
-- [x] 3. Update client/tailwind.config.js - Add blue color and font family
-- [x] 4. Update client/src/App.jsx - Conditional Navbar
-- [x] 5. Update client/src/pages/Login.jsx - Split layout with left content/right image
-- [x] 6. Update client/src/pages/Register.jsx - Split layout with left content/right image
+## Completed ✓
+All tasks have been completed successfully!
 

@@ -7,8 +7,17 @@ USE realtime_messaging;
 CREATE TABLE IF NOT EXISTS users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
+    display_name VARCHAR(100) NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
+    role ENUM('user', 'moderator', 'admin', 'founder') DEFAULT 'user',
+    gender ENUM('Male', 'Female', 'Other', 'Prefer not to say') DEFAULT 'Prefer not to say',
+    birthday DATE NULL,
+    age INT NULL,
+    bio TEXT NULL,
+    profile_picture VARCHAR(255) NULL,
+    status ENUM('Online', 'away', 'do not disturb', 'invisible') DEFAULT 'Online',
+    last_seen TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
