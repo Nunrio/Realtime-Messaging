@@ -1,0 +1,32 @@
+{
+  "name": "realtime-messaging",
+  "version": "1.0.0",
+  "description": "Real-Time Collaboration Hub - Chat, Reactions, and Collaborative Notes",
+  "scripts": {
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "setup:db": "node database/setup.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "build": "npm run build --prefix client",
+    "start": "npm run start --prefix server"
+  },
+  "keywords": [
+    "realtime",
+    "chat",
+    "collaboration",
+    "socket.io",
+    "react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^10.1.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.3.1",
+    "mysql2": "^3.19.0"
+  }
+}
