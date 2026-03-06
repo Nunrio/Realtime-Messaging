@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,12 +11,12 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f3f4f6;
+  background-color: #f9fafb;
 }
 
 /* Custom scrollbar */
@@ -86,3 +88,28 @@ body {
   display: inline-block;
 }
 
+/* Toast animations */
+@keyframes toast-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: toast-fade-in 0.3s ease-out;
+}
+
+/* General Form Field Styling */
+.form-input {
+  @apply w-full px-4 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black placeholder-gray-400;
+}
+
+/* General Button Styling */
+.btn-primary {
+  @apply w-full bg-[#1E90FF] hover:bg-[#1c86ee] text-white font-semibold py-3 px-4 rounded-2xl transition disabled:opacity-50;
+}
