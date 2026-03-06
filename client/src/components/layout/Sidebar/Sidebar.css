@@ -1,0 +1,146 @@
+/* Sidebar Component Styles */
+
+/* Base sidebar container */
+.sidebar {
+  @apply h-full bg-gray-50 flex flex-col;
+  @apply border-r border-gray-200;
+}
+
+/* Collapsed state */
+.sidebar--collapsed {
+  width: 90px;
+}
+
+/* Expanded state */
+.sidebar--expanded {
+  width: 240px;
+}
+
+/* Sidebar Header */
+.sidebar-header {
+  @apply flex items-center justify-between p-4 border-b border-gray-200;
+}
+
+/* Toggle button */
+.sidebar-toggle-btn {
+  @apply w-10 h-10 rounded-full bg-[#1E90FF] flex items-center justify-center text-white;
+  @apply hover:bg-[#1c86ee] transition-colors cursor-pointer;
+}
+
+/* Sidebar Items */
+.sidebar-nav {
+  @apply flex-1 py-4;
+}
+
+.sidebar-nav ul {
+  @apply space-y-2 px-2;
+}
+
+.sidebar-nav li button {
+  @apply w-full flex items-center rounded-full transition-all duration-200;
+}
+
+.sidebar-nav li button:hover {
+  @apply bg-[rgba(30,144,255,0.1)];
+}
+
+.sidebar-nav li button.active {
+  @apply bg-[#1E90FF] text-white;
+}
+
+.sidebar-nav li button.active .sidebar-icon {
+  @apply text-white;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+  @apply border-t border-gray-200 p-4 relative;
+}
+
+.sidebar-profile {
+  @apply flex items-center rounded-full cursor-pointer transition-all duration-200;
+  @apply hover:bg-[rgba(30,144,255,0.1)];
+}
+
+/* Profile dropdown menu (drop-up) */
+.sidebar-dropdown {
+  @apply absolute bottom-full left-4 right-4 mb-2 bg-white rounded-lg shadow-lg;
+  @apply border border-gray-200 overflow-hidden z-50;
+}
+
+.sidebar-dropdown button {
+  @apply w-full flex items-center px-4 py-3 text-black hover:bg-gray-50 transition-colors;
+}
+
+.sidebar-dropdown button:hover {
+  @apply bg-gray-50;
+}
+
+/* Animation utilities */
+.sidebar-fade-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.sidebar-fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+.sidebar-fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sidebar-fade-exit-active {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 300ms ease-out, transform 300ms ease-out;
+}
+
+/* Icon styling */
+.sidebar-icon {
+  @apply text-[#1E90FF] flex-shrink-0;
+}
+
+/* Text styling */
+.sidebar-text {
+  @apply text-black font-medium;
+}
+
+/* Username styling */
+.sidebar-username {
+  @apply text-xs text-gray-600;
+}
+
+/* Active state icon override */
+.sidebar-nav li button.active .sidebar-icon {
+  @apply text-white;
+}
+
+/* Focus states for accessibility */
+.sidebar-toggle-btn:focus,
+.sidebar-nav li button:focus,
+.sidebar-profile:focus {
+  @apply outline-none ring-2 ring-[#1E90FF] ring-offset-2;
+}
+
+/* Scrollbar styling for sidebar (if needed) */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+

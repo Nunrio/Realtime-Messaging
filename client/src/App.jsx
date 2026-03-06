@@ -5,36 +5,43 @@ import Register from './pages/Register';
 import Chat from './pages/Chat';
 import Room from './pages/Room';
 import ProtectedRoute from './components/ProtectedRoute';
+import SidebarLayout from './components/layout/SidebarLayout';
 
 function App() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className={isAuthPage ? 'min-h-screen' : 'min-h-screen bg-gray-50'}>
-      <div className={isAuthPage ? '' : 'container mx-auto px-4 py-6'}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route 
-            path="/chat" 
-            element={
-              <ProtectedRoute>
-                <Chat />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/room/:roomId" 
-            element={
-              <ProtectedRoute>
-                <Room />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/" element={<Navigate to="/chat" replace />} />
-        </Routes>
-      </div>
+    <div className={isAuthPage ? 'min-h-screen' : 'min-h-screen'}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/chat" 
+          element={
+            <ProtectedRoute>
+              <SidebarLayout>
+                <div className="container mx-auto px-4 py-6">
+                  <Chat />
+                </div>
+              </SidebarLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/room/:roomId" 
+          element={
+            <ProtectedRoute>
+              <SidebarLayout>
+                <div className="container mx-auto px-4 py-6">
+                  <Room />
+                </div>
+              </SidebarLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/chat" replace />} />
+      </Routes>
     </div>
   );
 }

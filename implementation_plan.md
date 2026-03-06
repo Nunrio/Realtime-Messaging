@@ -2,332 +2,199 @@
 
 ## [Overview]
 
-Create a real-time collaboration web application called "Realtime-Messaging" with authentication, chat rooms, live online user tracking, message reactions, and collaborative notes. The application will use React for the frontend, Node.js/Express for the backend, Socket.io for real-time communication, and MySQL for data persistence.
+Create a collapsible sidenav component that occupies the entire left side of the screen for the Realtime-Messaging application. The sidenav will appear on all authenticated pages (excluding login/register), with a modular structure containing header, navigation items, and user profile footer. The sidenav will be collapsed by default with icons only, and expand to show text labels when toggled.
 
 ## [Types]
 
-### Database Schema
+### Component State Types
 
-**users**
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | INT | PRIMARY KEY, AUTO_INCREMENT |
-| username | VARCHAR(50) | UNIQUE, NOT NULL |
-| email | VARCHAR(100) | UNIQUE, NOT NULL |
-| password | VARCHAR(255) | NOT NULL |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-
-**rooms**
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | INT | PRIMARY KEY, AUTO_INCREMENT |
-| room_name | VARCHAR(100) | NOT NULL |
-| created_by | INT | FOREIGN KEY (users.id) |
-| created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-
-**messages**
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | INT | PRIMARY KEY, AUTO_INCREMENT |
-| room_id | INT | FOREIGN KEY (rooms.id) |
-| user_id | INT | FOREIGN KEY (users.id) |
-| message | TEXT | NOT NULL |
-| timestamp | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP |
-
-**reactions**
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | INT | PRIMARY KEY, AUTO_INCREMENT |
-| message_id | INT | FOREIGN KEY (messages.id) |
-| user_id | INT | FOREIGN KEY (users.id) |
-| reaction_type | VARCHAR(20) | NOT NULL |
-
-**room_members**
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | INT | PRIMARY KEY, AUTO_INCREMENT |
-| room_id | INT | FOREIGN KEY (rooms.id) |
-| user_id | INT | FOREIGN KEY (users.id) |
-
-**notes**
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | INT | PRIMARY KEY, AUTO_INCREMENT |
-| room_id | INT | FOREIGN KEY (rooms.id) |
-| content | TEXT | |
-| updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP ON UPDATE |
-
-### API Response Types
-
-**AuthResponse**
+**SidebarState**
 ```typescript
 {
-  success: boolean;
-  token: string;
-  user: { id: number; username: string; email: string };
+  isExpanded: boolean;        // true = expanded, false = collapsed
+  activeItem: string;         // currently active navigation item
+  showProfileMenu: boolean;   // profile dropdown visibility
 }
 ```
 
-**RoomResponse**
+**SidebarItem**
 ```typescript
 {
-  id: number;
-  room_name: string;
-  created_by: number;
-  created_at: string;
-  members_count?: number;
+  id: string;           // unique identifier
+  label: string;        // display text
+  icon: LucideIcon;     // icon component from lucide-react
+  path: string;         // navigation path (optional for future)
 }
 ```
 
-**MessageResponse**
+**UserProfile**
 ```typescript
 {
-  id: number;
-  room_id: number;
-  user_id: number;
-  username: string;
-  message: string;
-  timestamp: string;
-  reactions: { type: string; count: number; users: number[] }[];
+  displayName: string | null;   // user's display name (can be null)
+  username: string;             // @username
+  avatar: string;               // profile picture URL
 }
 ```
 
-**ReactionPayload**
-```typescript
-{
-  message_id: number;
-  user_id: number;
-  reaction_type: string;
-}
-```
+### Color Theme Reference
 
-### Socket Events
+| Element | Color |
+|---------|-------|
+| Primary (Button/Active) | #1E90FF |
+| Sidenav Background | #f9fafb (bg-gray-50) |
+| Icon Color (Active) | #1E90FF |
+| Text Color | Black (#000000) |
+| Hover Background | rgba(30, 144, 255, 0.1) |
 
-**Client → Server**
-- `join_room` - Join a chat room
-- `leave_room` - Leave a chat room
-- `send_message` - Send a chat message
-- `typing` - Typing indicator
-- `add_reaction` - Add reaction to message
-- `remove_reaction` - Remove reaction from message
-- `edit_note` - Edit collaborative note
+### Dimensions
 
-**Server → Client**
-- `user_joined` - User joined room
-- `user_left` - User left room
-- `new_message` - New message received
-- `message_history` - Chat history on join
-- `typing-indicator` - User typing status
-- `reaction_update` - Reaction count changed
-- `note_updated` - Collaborative note changed
-- `online_users` - List of online users
+| State | Width |
+|-------|-------|
+| Collapsed | 70px |
+| Expanded | 240px |
 
 ## [Files]
 
 ### New Files to be Created
 
-**Root Configuration**
-- `package.json` - Root package.json for workspace management
-- `README.md` - Project documentation
+**Sidebar Components**
+- `client/src/components/layout/Sidebar/Sidebar.jsx` - Main sidebar container with state management
+- `client/src/components/layout/Sidebar/SidebarHeader.jsx` - Header with toggle button and logo
+- `client/src/components/layout/Sidebar/SidebarItems.jsx` - Navigation items list
+- `client/src/components/layout/Sidebar/SidebarFooter.jsx` - User profile section
+- `client/src/components/layout/Sidebar/Sidebar.css` - Component-specific styles and animations
+- `client/src/components/layout/Sidebar/icons/sidebarIcons.js` - Centralized icon exports
 
-**Server (Backend)**
-- `server/package.json` - Server dependencies
-- `server/.env` - Environment variables
-- `server/src/index.js` - Express server entry point
-- `server/src/config/db.js` - MySQL database connection
-- `server/src/config/auth.js` - JWT authentication middleware
-- `server/src/models/User.js` - User model
-- `server/src/models/Room.js` - Room model
-- `server/src/models/Message.js` - Message model
-- `server/src/models/Reaction.js` - Reaction model
-- `server/src/models/Note.js` - Note model
-- `server/src/controllers/authController.js` - Authentication controller
-- `server/src/controllers/roomController.js` - Room controller
-- `server/src/controllers/messageController.js` - Message controller
-- `server/src/routes/authRoutes.js` - Auth routes
-- `server/src/routes/roomRoutes.js` - Room routes
-- `server/src/routes/messageRoutes.js` - Message routes
-- `server/src/sockets/index.js` - Socket.io handler setup
-- `server/src/sockets/chatHandler.js` - Chat socket events
+**Layout Wrapper**
+- `client/src/components/layout/SidebarLayout.jsx` - Layout wrapper that includes sidebar on authenticated pages
 
-**Database**
-- `database/schema.sql` - MySQL database schema
-- `database/seed.sql` - Sample data
+### Files to be Modified
 
-**Client (Frontend)**
-- `client/package.json` - Client dependencies
-- `client/vite.config.js` - Vite configuration
-- `client/tailwind.config.js` - TailwindCSS configuration
-- `client/postcss.config.js` - PostCSS configuration
-- `client/index.html` - HTML entry point
-- `client/src/main.jsx` - React entry point
-- `client/src/App.jsx` - Main App component
-- `client/src/index.css` - Global styles
-- `client/src/api/axios.js` - Axios instance
-- `client/src/api/auth.js` - Auth API calls
-- `client/src/api/rooms.js` - Room API calls
-- `client/src/api/messages.js` - Message API calls
-- `client/src/socket/socket.js` - Socket.io client setup
-- `client/src/context/AuthContext.jsx` - Auth context
-- `client/src/context/SocketContext.jsx` - Socket context
-- `client/src/components/Navbar.jsx` - Navigation bar
-- `client/src/components/ProtectedRoute.jsx` - Protected route wrapper
-- `client/src/components/ChatRoom.jsx` - Chat room component
-- `client/src/components/Message.jsx` - Message component
-- `client/src/components/ReactionPicker.jsx` - Reaction picker
-- `client/src/components/TypingIndicator.jsx` - Typing indicator
-- `client/src/components/OnlineUsers.jsx` - Online users list
-- `client/src/components/CollaborativeNote.jsx` - Collaborative note editor
-- `client/src/pages/Login.jsx` - Login page
-- `client/src/pages/Register.jsx` - Register page
-- `client/src/pages/Dashboard.jsx` - Dashboard page
-- `client/src/pages/Room.jsx` - Room page
+**App.jsx**
+- Wrap authenticated routes with SidebarLayout component
+- Import SidebarLayout and apply conditional rendering based on auth state
 
-### Configuration File Updates
+**AuthContext.jsx**
+- No changes needed (logout function already exists)
 
-- Create `.gitignore` file with appropriate patterns
-- No existing files to modify (new project)
+**Chat.jsx**
+- Wrap content with sidebar layout structure (remove if using SidebarLayout)
+
+**Room.jsx**
+- Wrap content with sidebar layout structure (remove if using SidebarLayout)
 
 ## [Functions]
 
-### New Functions - Server
+### New Functions
 
-**authController.js**
-- `register(req, res)` - Handle user registration with bcrypt password hashing
-- `login(req, res)` - Handle user login and JWT token generation
+**sidebarIcons.js**
+```javascript
+// Centralized icon exports for easy modification
+export { MessageCircle, Users, Archive, Menu, X } from 'lucide-react';
+```
 
-**roomController.js**
-- `createRoom(req, res)` - Create a new chat room
-- `getRooms(req, res)` - Get all available rooms
-- `getRoomById(req, res)` - Get room details by ID
-- `joinRoom(req, res)` - Join a room
-- `leaveRoom(req, res)` - Leave a room
+**Sidebar.jsx**
+- `toggleSidebar()` - Toggle between expanded/collapsed states
+- `handleItemClick(id)` - Set active navigation item
+- `handleProfileClick()` - Toggle profile dropdown menu
+- `handleLogout()` - Call logout from AuthContext and navigate to login
 
-**messageController.js**
-- `getMessages(req, res)` - Get messages for a room with pagination
-- `getMessageReactions(req, res)` - Get reactions for a message
+**SidebarHeader.jsx**
+- `handleToggle()` - Callback to toggle sidebar
 
-**chatHandler.js (Socket)**
-- `handleJoinRoom(socket, roomId, userId)` - Handle room joining
-- `handleLeaveRoom(socket, roomId, userId)` - Handle room leaving
-- `handleSendMessage(socket, data)` - Handle new message
-- `handleTyping(socket, data)` - Handle typing indicator
-- `handleReaction(socket, data)` - Handle reaction add/remove
-- `handleNoteUpdate(socket, data)` - Handle collaborative note
+**SidebarItems.jsx**
+- No new functions, receives props from parent
 
-### New Functions - Client
+**SidebarFooter.jsx**
+- `handleProfileClick()` - Callback to toggle profile menu
+- `handleLogout()` - Callback for logout action
 
-**auth.js (API)**
-- `register(data)` - POST /api/auth/register
-- `login(data)` - POST /api/auth/login
-- `getCurrentUser()` - GET /api/auth/me
+**SidebarLayout.jsx**
+- Component that wraps content with sidebar
 
-**rooms.js (API)**
-- `getRooms()` - GET /api/rooms
-- `createRoom(data)` - POST /api/rooms
-- `getRoom(id)` - GET /api/rooms/:id
-- `joinRoom(roomId)` - POST /api/rooms/:id/join
+### Modified Functions
 
-**messages.js (API)**
-- `getMessages(roomId, page)` - GET /api/rooms/:id/messages
-
-**AuthContext.jsx**
-- `login(userData)` - Update auth state with user data
-- `logout()` - Clear auth state
-- `register(userData)` - Register and auto-login
-
-**SocketContext.jsx**
-- `joinRoom(roomId)` - Join socket room
-- `leaveRoom(roomId)` - Leave socket room
-- `sendMessage(message)` - Emit message event
-- `sendTyping(isTyping)` - Emit typing event
-- `addReaction(messageId, type)` - Emit reaction event
-- `updateNote(content)` - Emit note update event
+**App.jsx**
+- Add SidebarLayout wrapper for authenticated routes
+- Conditionally render SidebarLayout based on authentication status
 
 ## [Classes]
 
-### New Classes - Server
+### New Components (React Functional Components)
 
-**db.js (Database)**
-- Singleton MySQL connection pool
-- Methods: `query()`, `getConnection()`
+**Sidebar (Main Container)**
+- Manages sidebar state (expanded/collapsed, active item, profile menu)
+- Provides context to child components via props
+- Handles click outside to close profile menu
 
-### New Classes - Client
+**SidebarHeader**
+- Props: `isExpanded`, `onToggle`
+- Contains toggle button and website title
 
-**Message (Component)**
-- Displays individual message with reactions
-- Props: `message`, `currentUser`, `onReact`
+**SidebarItems**
+- Props: `items`, `activeItem`, `isExpanded`, `onItemClick`
+- Renders navigation list with icons and labels
 
-**ChatRoom (Component)**
-- Main chat container with message list, input, and sidebar
-- Props: `room`, `currentUser`
+**SidebarFooter**
+- Props: `user`, `isExpanded`, `showMenu`, `onProfileClick`, `onLogout`
+- Renders user profile picture and info with dropdown menu
 
-**CollaborativeNote (Component)**
-- Real-time collaborative text editor
-- Props: `roomId`, `initialContent`
+**SidebarLayout**
+- Props: `children`
+- Wraps page content with sidebar
+- Checks authentication status
 
 ## [Dependencies]
 
-### Server Dependencies
-- `express` ^4.18.2 - Web framework
-- `socket.io` ^4.6.1 - Real-time communication
-- `mysql2` ^3.6.0 - MySQL driver
-- `bcryptjs` ^2.4.3 - Password hashing
-- `jsonwebtoken` ^9.0.2 - JWT tokens
-- `cors` ^2.8.5 - CORS middleware
-- `dotenv` ^16.3.1 - Environment variables
-- `nodemon` ^3.0.1 - Development server
+### Already Installed (No Changes Needed)
+- `react` ^18.2.0
+- `react-dom` ^18.2.0
+- `react-router-dom` ^6.16.0
+- `lucide-react` ^0.577.0 - Icons library (already in use)
+- `tailwindcss` ^3.3.3
 
-### Client Dependencies
-- `react` ^18.2.0 - UI library
-- `react-dom` ^18.2.0 - React DOM
-- `react-router-dom` ^6.16.0 - Routing
-- `axios` ^1.5.0 - HTTP client
-- `socket.io-client` ^4.6.1 - Socket.io client
-- `tailwindcss` ^3.3.3 - Styling
-- `postcss` ^8.4.31 - CSS processing
-- `autoprefixer` ^10.4.16 - CSS prefixes
-- `vite` ^4.4.9 - Build tool
+### No New Dependencies Required
+All required functionality can be achieved with existing dependencies.
 
 ## [Testing]
 
-### Test Strategy
-- Manual testing via Postman for API endpoints
-- Browser testing for frontend functionality
-- Socket.io testing with socket client
+### Visual Validation Checklist
+- [ ] Sidebar appears on /chat and /room/:roomId pages
+- [ ] Sidebar does NOT appear on /login and /register pages
+- [ ] Sidebar is collapsed (70px) by default
+- [ ] Clicking toggle expands sidebar to 240px
+- [ ] Only icons visible when collapsed
+- [ ] Icons and text visible when expanded
+- [ ] Navigation items show active state styling
+- [ ] Hover effects work on navigation items
+- [ ] Profile dropdown opens upward (drop-up)
+- [ ] Profile shows display name or username
+- [ ] Logout button works and redirects to login
+- [ ] Smooth transition animation on expand/collapse
 
-### Test Files to Create
-- `database/test_data.sql` - Test queries
-- No automated test files (manual verification)
-
-### Validation Strategies
-- Verify JWT token generation and validation
-- Test real-time message delivery
-- Confirm typing indicators work
-- Test reaction counts update in real-time
-- Verify collaborative note syncing
-- Test online users presence tracking
+### Manual Test Steps
+1. Login with valid credentials
+2. Verify sidebar appears on /chat page
+3. Verify sidebar shows only icons initially
+4. Click toggle button - sidebar should expand
+5. Click on "Chats" - should remain on /chat
+6. Navigate to a room - sidebar should still appear
+7. Click profile picture - dropdown should open upward
+8. Click logout - should redirect to login page
 
 ## [Implementation Order]
 
-1. **Setup project structure** - Create root package.json, client/, server/, database/ directories
-2. **Create database schema** - Write schema.sql with all tables
-3. **Setup server** - Create Express server with basic configuration
-4. **Implement database layer** - Create db.js connection and models
-5. **Implement authentication** - Create auth routes, controller, JWT middleware
-6. **Implement room management** - Create room routes and controller
-7. **Implement message system** - Create message routes and controller
-8. **Setup Socket.io** - Create socket handlers for real-time features
-9. **Setup client** - Create React app with Vite and TailwindCSS
-10. **Implement auth pages** - Create Login and Register pages
-11. **Implement Dashboard** - Create room listing and creation
-12. **Implement Chat Room** - Create chat interface with messages
-13. **Implement Reactions** - Add reaction picker and display
-14. **Implement Online Users** - Add presence tracking
-15. **Implement Collaborative Notes** - Add shared note editor
-16. **Test and verify** - Test all features end-to-end
+1. **Create icon library** - Create `sidebarIcons.js` with centralized icon exports
+2. **Create SidebarHeader** - Build header with toggle button and title
+3. **Create SidebarItems** - Build navigation items list with styling
+4. **Create SidebarFooter** - Build user profile section with dropdown
+5. **Create main Sidebar component** - Assemble all parts with state management
+6. **Create SidebarLayout** - Create layout wrapper component
+7. **Update App.jsx** - Integrate SidebarLayout with routing
+8. **Add animations** - Add CSS transitions for smooth expand/collapse
+9. **Test and verify** - Test all interactions and visual states
 
 ---
 
-*This implementation plan was created for the Realtime-Messaging project. All features will be implemented following this document as the single source of truth.*
+*This implementation plan was created for the Sidenav Component. All features will be implemented following this document as the single source of truth.*
 
