@@ -167,13 +167,27 @@ const ConversationBody = ({ group }) => {
     const message = messages.find(m => m.id === messageId);
     if (!message) return;
 
+    // Check if user already has this specific reaction type
     const userReaction = message.reactions?.find(
       r => r.type === reactionType && r.users?.includes(user.id)
     );
 
     if (userReaction) {
+      // User already has this reaction - remove it (toggle off)
       removeReaction(messageId, reactionType);
     } else {
+      // User doesn't have this reaction
+      // First, check if user has any other reaction on this message and remove it
+      const existingUserReaction = message.reactions?.find(
+        r => r.users?.includes(user.id)
+      );
+      
+      if (existingUserReaction) {
+        // Remove the existing reaction first, then add the new one
+        removeReaction(messageId, existingUserReaction.type);
+      }
+      
+      // Add the new reaction
       addReaction(messageId, reactionType);
     }
     setShowReactions(null);
