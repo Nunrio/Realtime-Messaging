@@ -18,7 +18,7 @@ const io = new Server(server, {
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
-const roomRoutes = require('./routes/roomRoutes');
+const groupRoutes = require('./routes/groupRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 
 // Import socket handlers
@@ -35,15 +35,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/rooms', roomRoutes);
-app.use('/api', messageRoutes);
-
-// Health check
+// Health check - must be before other routes
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Server is running' });
 });
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api', messageRoutes);
 
 // Setup socket handlers
 setupChatHandlers(io);

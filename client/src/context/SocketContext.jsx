@@ -40,27 +40,27 @@ export const SocketProvider = ({ children }) => {
         }
     }, [isAuthenticated, token]);
 
-    const joinRoom = (roomId) => {
+    const joinGroup = (groupId) => {
         if (socket) {
-            socket.emit('join_room', { roomId });
+            socket.emit('join_group', { groupId });
         }
     };
 
-    const leaveRoom = (roomId) => {
+    const leaveGroup = (groupId) => {
         if (socket) {
-            socket.emit('leave_room', { roomId });
+            socket.emit('leave_group', { groupId });
         }
     };
 
-    const sendMessage = (roomId, message) => {
+    const sendMessage = (groupId, message) => {
         if (socket) {
-            socket.emit('send_message', { roomId, message });
+            socket.emit('send_message', { groupId, message });
         }
     };
 
-    const sendTyping = (roomId, isTyping) => {
+    const sendTyping = (groupId, isTyping) => {
         if (socket) {
-            socket.emit('typing', { roomId, isTyping });
+            socket.emit('typing', { groupId, isTyping });
         }
     };
 
@@ -76,17 +76,17 @@ export const SocketProvider = ({ children }) => {
         }
     };
 
-    const updateNote = (roomId, content) => {
+    const updateNote = (groupId, content) => {
         if (socket) {
-            socket.emit('update_note', { roomId, content });
+            socket.emit('update_note', { groupId, content });
         }
     };
 
     const value = {
         socket,
         connected,
-        joinRoom,
-        leaveRoom,
+        joinGroup,
+        leaveGroup,
         sendMessage,
         sendTyping,
         addReaction,

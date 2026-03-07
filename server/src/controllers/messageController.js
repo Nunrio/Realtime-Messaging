@@ -1,19 +1,19 @@
 const Message = require('../models/Message');
-const Room = require('../models/Room');
+const Group = require('../models/Group');
 
-// Get messages for a room
+// Get messages for a group
 const getMessages = async (req, res) => {
     try {
-        const { roomId } = req.params;
+        const { groupId } = req.params;
         const { page = 1, limit = 50 } = req.query;
         const offset = (page - 1) * limit;
 
-        const room = await Room.findById(roomId);
-        if (!room) {
-            return res.status(404).json({ message: 'Room not found' });
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
         }
 
-        const messages = await Message.getByRoom(roomId, parseInt(limit), parseInt(offset));
+        const messages = await Message.getByGroup(groupId, parseInt(limit), parseInt(offset));
 
         res.json({
             success: true,
@@ -21,7 +21,7 @@ const getMessages = async (req, res) => {
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit),
-                total: await Message.getCount(roomId)
+                total: await Message.getCount(groupId)
             }
         });
     } catch (error) {
@@ -33,15 +33,15 @@ const getMessages = async (req, res) => {
 // Get recent messages (simpler)
 const getRecentMessages = async (req, res) => {
     try {
-        const { roomId } = req.params;
+        const { groupId } = req.params;
         const { limit = 50 } = req.query;
 
-        const room = await Room.findById(roomId);
-        if (!room) {
-            return res.status(404).json({ message: 'Room not found' });
+        const group = await Group.findById(groupId);
+        if (!group) {
+            return res.status(404).json({ message: 'Group not found' });
         }
 
-        const messages = await Message.getRecent(roomId, parseInt(limit));
+        const messages = await Message.getRecent(groupId, parseInt(limit));
 
         res.json({
             success: true,

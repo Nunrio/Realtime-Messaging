@@ -1,21 +1,22 @@
+
 const Message = require('../models/Message');
-const Room = require('../models/Room');
+const Group = require('../models/Group');
 const Note = require('../models/Note');
 const User = require('../models/User');
 
-// Track online users: { roomId: { userId: { id, username, socketId } } }
+// Track online users: { groupId: { userId: { id, username, socketId } } }
 const onlineUsers = {};
 
-// Helper to get online users in a room
-const getOnlineUsersInRoom = (roomId) => {
-    if (!onlineUsers[roomId]) return [];
-    return Object.values(onlineUsers[roomId]);
+// Helper to get online users in a group
+const getOnlineUsersInGroup = (groupId) => {
+    if (!onlineUsers[groupId]) return [];
+    return Object.values(onlineUsers[groupId]);
 };
 
-// Helper to notify room about online users
-const notifyOnlineUsers = (io, roomId) => {
-    const users = getOnlineUsersInRoom(roomId);
-    io.to(roomId).emit('online_users', users);
+// Helper to notify group about online users
+const notifyOnlineUsers = (io, groupId) => {
+    const users = getOnlineUsersInGroup(groupId);
+    io.to(groupId).emit('online_users', users);
 };
 
 const setupChatHandlers = (io) => {
@@ -40,99 +41,99 @@ const setupChatHandlers = (io) => {
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.user.username} (${socket.id})`);
 
-        // Join a room
-        socket.on('join_room', async ({ roomId }) => {
+        // Join a group
+        socket.on('join_group', async ({ groupId }) => {
             try {
-                const room = await Room.findById(roomId);
-                if (!room) {
-                    socket.emit('error', { message: 'Room not found' });
+                const group = await Group.findById(groupId);
+                if (!group) {
+                    socket.emit('error', { message: 'Group not found' });
                     return;
                 }
 
-                // Join socket room
-                socket.join(roomId);
+                // Join socket group
+                socket.join(groupId);
 
                 // Track online user
-                if (!onlineUsers[roomId]) {
-                    onlineUsers[roomId] = {};
+                if (!onlineUsers[groupId]) {
+                    onlineUsers[groupId] = {};
                 }
-                onlineUsers[roomId][socket.user.id] = {
+                onlineUsers[groupId][socket.user.id] = {
                     id: socket.user.id,
                     username: socket.user.username,
                     socketId: socket.id
                 };
 
                 // Add user as member if not already
-                await Room.addMember(roomId, socket.user.id);
+                await Group.addMember(groupId, socket.user.id);
 
                 // Get message history
-                const messages = await Message.getRecent(roomId, 50);
+                const messages = await Message.getRecent(groupId, 50);
 
                 // Get note
-                const note = await Note.findByRoom(roomId);
+                const note = await Note.findByGroup(groupId);
 
                 // Send history to user
                 socket.emit('message_history', messages);
                 socket.emit('note_content', note);
 
-                // Notify room about new user
-                socket.to(roomId).emit('user_joined', {
+                // Notify group about new user
+                socket.to(groupId).emit('user_joined', {
                     user: {
                         id: socket.user.id,
                         username: socket.user.username
                     }
                 });
 
-                // Notify room about online users
-                notifyOnlineUsers(io, roomId);
+                // Notify group about online users
+                notifyOnlineUsers(io, groupId);
 
-                console.log(`${socket.user.username} joined room ${roomId}`);
+                console.log(`${socket.user.username} joined group ${groupId}`);
             } catch (error) {
-                console.error('Join room error:', error);
-                socket.emit('error', { message: 'Failed to join room' });
+                console.error('Join group error:', error);
+                socket.emit('error', { message: 'Failed to join group' });
             }
         });
 
-        // Leave a room
-        socket.on('leave_room', async ({ roomId }) => {
+        // Leave a group
+        socket.on('leave_group', async ({ groupId }) => {
             try {
-                socket.leave(roomId);
+                socket.leave(groupId);
 
                 // Remove from online users
-                if (onlineUsers[roomId] && onlineUsers[roomId][socket.user.id]) {
-                    delete onlineUsers[roomId][socket.user.id];
+                if (onlineUsers[groupId] && onlineUsers[groupId][socket.user.id]) {
+                    delete onlineUsers[groupId][socket.user.id];
                 }
 
-                // Notify room about user leaving
-                socket.to(roomId).emit('user_left', {
+                // Notify group about user leaving
+                socket.to(groupId).emit('user_left', {
                     user: {
                         id: socket.user.id,
                         username: socket.user.username
                     }
                 });
 
-                // Notify room about online users
-                notifyOnlineUsers(io, roomId);
+                // Notify group about online users
+                notifyOnlineUsers(io, groupId);
 
-                console.log(`${socket.user.username} left room ${roomId}`);
+                console.log(`${socket.user.username} left group ${groupId}`);
             } catch (error) {
-                console.error('Leave room error:', error);
+                console.error('Leave group error:', error);
             }
         });
 
         // Send a message
-        socket.on('send_message', async ({ roomId, message }) => {
+        socket.on('send_message', async ({ groupId, message }) => {
             try {
                 if (!message || message.trim() === '') return;
 
-                const msg = await Message.create(roomId, socket.user.id, message);
+                const msg = await Message.create(groupId, socket.user.id, message);
                 
                 // Get full message with username
                 const fullMessage = await Message.findById(msg.id);
                 fullMessage.reactions = await Message.getReactions(msg.id);
 
-                // Broadcast to room
-                io.to(roomId).emit('new_message', fullMessage);
+                // Broadcast to group
+                io.to(groupId).emit('new_message', fullMessage);
             } catch (error) {
                 console.error('Send message error:', error);
                 socket.emit('error', { message: 'Failed to send message' });
@@ -140,8 +141,8 @@ const setupChatHandlers = (io) => {
         });
 
         // Typing indicator
-        socket.on('typing', ({ roomId, isTyping }) => {
-            socket.to(roomId).emit('typing_indicator', {
+        socket.on('typing', ({ groupId, isTyping }) => {
+            socket.to(groupId).emit('typing_indicator', {
                 user: {
                     id: socket.user.id,
                     username: socket.user.username
@@ -161,10 +162,10 @@ const setupChatHandlers = (io) => {
                     reactions
                 });
 
-                // Also send to room for simplicity
+                // Also send to group for simplicity
                 const message = await Message.findById(messageId);
                 if (message) {
-                    io.to(message.room_id.toString()).emit('reaction_update', {
+                    io.to(message.group_id.toString()).emit('reaction_update', {
                         messageId,
                         reactions
                     });
@@ -181,7 +182,7 @@ const setupChatHandlers = (io) => {
                 
                 const message = await Message.findById(messageId);
                 if (message) {
-                    io.to(message.room_id.toString()).emit('reaction_update', {
+                    io.to(message.group_id.toString()).emit('reaction_update', {
                         messageId,
                         reactions
                     });
@@ -192,12 +193,12 @@ const setupChatHandlers = (io) => {
         });
 
         // Update collaborative note
-        socket.on('update_note', async ({ roomId, content }) => {
+        socket.on('update_note', async ({ groupId, content }) => {
             try {
-                const note = await Note.update(roomId, content);
+                const note = await Note.update(groupId, content);
                 
-                // Broadcast note update to room
-                io.to(roomId).emit('note_updated', note);
+                // Broadcast note update to group
+                io.to(groupId).emit('note_updated', note);
             } catch (error) {
                 console.error('Update note error:', error);
             }
@@ -207,20 +208,20 @@ const setupChatHandlers = (io) => {
         socket.on('disconnect', () => {
             console.log(`User disconnected: ${socket.user.username}`);
             
-            // Remove from all rooms
-            for (const roomId in onlineUsers) {
-                if (onlineUsers[roomId][socket.user.id]) {
-                    delete onlineUsers[roomId][socket.user.id];
+            // Remove from all groups
+            for (const groupId in onlineUsers) {
+                if (onlineUsers[groupId][socket.user.id]) {
+                    delete onlineUsers[groupId][socket.user.id];
                     
-                    // Notify room
-                    io.to(roomId).emit('user_left', {
+                    // Notify group
+                    io.to(groupId).emit('user_left', {
                         user: {
                             id: socket.user.id,
                             username: socket.user.username
                         }
                     });
                     
-                    notifyOnlineUsers(io, roomId);
+                    notifyOnlineUsers(io, groupId);
                 }
             }
         });

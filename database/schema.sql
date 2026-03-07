@@ -1,3 +1,4 @@
+
 -- Realtime Messaging Database Schema
 -- Create database first: CREATE DATABASE realtime_messaging;
 
@@ -21,10 +22,10 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Rooms table
-CREATE TABLE IF NOT EXISTS rooms (
+-- Groups table (renamed from rooms)
+CREATE TABLE IF NOT EXISTS groups (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    room_name VARCHAR(100) NOT NULL,
+    group_name VARCHAR(100) NOT NULL,
     created_by INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
@@ -33,11 +34,11 @@ CREATE TABLE IF NOT EXISTS rooms (
 -- Messages table
 CREATE TABLE IF NOT EXISTS messages (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    room_id INT NOT NULL,
+    group_id INT NOT NULL,
     user_id INT NOT NULL,
     message TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -52,30 +53,30 @@ CREATE TABLE IF NOT EXISTS reactions (
     UNIQUE KEY unique_reaction (message_id, user_id, reaction_type)
 );
 
--- Room members table
-CREATE TABLE IF NOT EXISTS room_members (
+-- Group members table (renamed from room_members)
+CREATE TABLE IF NOT EXISTS group_members (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    room_id INT NOT NULL,
+    group_id INT NOT NULL,
     user_id INT NOT NULL,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE KEY unique_member (room_id, user_id)
+    UNIQUE KEY unique_member (group_id, user_id)
 );
 
 -- Collaborative notes table
 CREATE TABLE IF NOT EXISTS notes (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    room_id INT NOT NULL,
+    group_id INT NOT NULL,
     content TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );
 
 -- Indexes for better performance
-CREATE INDEX idx_messages_room ON messages(room_id);
+CREATE INDEX idx_messages_group ON messages(group_id);
 CREATE INDEX idx_messages_user ON messages(user_id);
 CREATE INDEX idx_reactions_message ON reactions(message_id);
-CREATE INDEX idx_room_members_room ON room_members(room_id);
-CREATE INDEX idx_room_members_user ON room_members(user_id);
+CREATE INDEX idx_group_members_group ON group_members(group_id);
+CREATE INDEX idx_group_members_user ON group_members(user_id);
 

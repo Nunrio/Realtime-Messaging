@@ -18,12 +18,13 @@ const Sidebar = () => {
   // Determine active item based on current route
   useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/chat') || path.startsWith('/room')) {
-      setActiveItem('chats');
-    } else if (path.startsWith('/groups')) {
+    // Check more specific paths first
+    if (path.startsWith('/messages/groups')) {
       setActiveItem('groups');
-    } else if (path.startsWith('/archive')) {
+    } else if (path.startsWith('/messages/archive')) {
       setActiveItem('archive');
+    } else if (path.startsWith('/messages') || path.startsWith('/chat') || path.startsWith('/room')) {
+      setActiveItem('chats');
     }
   }, [location.pathname]);
 
@@ -46,16 +47,16 @@ const Sidebar = () => {
   const handleItemClick = (itemId) => {
     setActiveItem(itemId);
     
-    // Navigate based on item - for now only chats has a route
+    // Navigate based on item - using new messaging page
     switch (itemId) {
       case 'chats':
-        navigate('/chat');
+        navigate('/messages');
         break;
       case 'groups':
-        // Future: navigate('/groups');
+        navigate('/messages/groups');
         break;
       case 'archive':
-        // Future: navigate('/archive');
+        navigate('/messages/archive');
         break;
       default:
         break;
@@ -106,4 +107,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-

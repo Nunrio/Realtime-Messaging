@@ -21,7 +21,7 @@ const Login = () => {
 
         try {
             await login(email, password);
-            navigate('/chat');
+            navigate('/messages');
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
             setError(errorMessage);

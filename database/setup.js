@@ -27,8 +27,8 @@ async function setupDatabase() {
         await connection.query('DROP TABLE IF EXISTS reactions');
         await connection.query('DROP TABLE IF EXISTS messages');
         await connection.query('DROP TABLE IF EXISTS notes');
-        await connection.query('DROP TABLE IF EXISTS room_members');
-        await connection.query('DROP TABLE IF EXISTS rooms');
+        await connection.query('DROP TABLE IF EXISTS group_members');
+        await connection.query('DROP TABLE IF EXISTS groups');
         await connection.query('DROP TABLE IF EXISTS users');
         console.log('Old tables dropped');
 

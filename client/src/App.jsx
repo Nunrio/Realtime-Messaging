@@ -2,8 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Chat from './pages/Chat';
-import Room from './pages/Room';
+import MessagingPage from './pages/MessagingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SidebarLayout from './components/layout/SidebarLayout';
 
@@ -17,30 +16,46 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route 
-          path="/chat" 
+          path="/messages" 
           element={
             <ProtectedRoute>
               <SidebarLayout>
-                <div className="container mx-auto px-4 py-6">
-                  <Chat />
-                </div>
+                <MessagingPage />
               </SidebarLayout>
             </ProtectedRoute>
           } 
         />
         <Route 
-          path="/room/:roomId" 
+          path="/messages/groups" 
           element={
             <ProtectedRoute>
               <SidebarLayout>
-                <div className="container mx-auto px-4 py-6">
-                  <Room />
-                </div>
+                <MessagingPage />
               </SidebarLayout>
             </ProtectedRoute>
           } 
         />
-        <Route path="/" element={<Navigate to="/chat" replace />} />
+        <Route 
+          path="/messages/archive" 
+          element={
+            <ProtectedRoute>
+              <SidebarLayout>
+                <MessagingPage />
+              </SidebarLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/messages/:groupId" 
+          element={
+            <ProtectedRoute>
+              <SidebarLayout>
+                <MessagingPage />
+              </SidebarLayout>
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/messages" replace />} />
       </Routes>
     </div>
   );

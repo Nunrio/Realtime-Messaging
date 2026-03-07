@@ -2,13 +2,13 @@ const db = require('../config/db');
 
 class Message {
     // Create a new message
-    static async create(roomId, userId, message) {
-        const sql = 'INSERT INTO messages (room_id, user_id, message) VALUES (?, ?, ?)';
-        const result = await db.query(sql, [roomId, userId, message]);
+    static async create(groupId, userId, message) {
+        const sql = 'INSERT INTO messages (group_id, user_id, message) VALUES (?, ?, ?)';
+        const result = await db.query(sql, [groupId, userId, message]);
         
         return {
             id: result.insertId,
-            room_id: roomId,
+            group_id: groupId,
             user_id: userId,
             message
         };
@@ -26,17 +26,17 @@ class Message {
         return rows[0] || null;
     }
 
-    // Get messages by room with pagination
-    static async getByRoom(roomId, limit = 50, offset = 0) {
+    // Get messages by group with pagination
+    static async getByGroup(groupId, limit = 50, offset = 0) {
         const sql = `
             SELECT m.*, u.username
             FROM messages m
             JOIN users u ON m.user_id = u.id
-            WHERE m.room_id = ?
+            WHERE m.group_id = ?
             ORDER BY m.timestamp DESC
             LIMIT ? OFFSET ?
         `;
-        const rows = await db.query(sql, [roomId, limit, offset]);
+        const rows = await db.query(sql, [groupId, limit, offset]);
         
         // Get reactions for each message
         for (let msg of rows) {
@@ -47,16 +47,16 @@ class Message {
     }
 
     // Get recent messages (simpler version)
-    static async getRecent(roomId, limit = 50) {
+    static async getRecent(groupId, limit = 50) {
         const sql = `
             SELECT m.*, u.username
             FROM messages m
             JOIN users u ON m.user_id = u.id
-            WHERE m.room_id = ?
+            WHERE m.group_id = ?
             ORDER BY m.timestamp DESC
             LIMIT ?
         `;
-        const rows = await db.query(sql, [roomId, limit]);
+        const rows = await db.query(sql, [groupId, limit]);
         
         // Get reactions for each message
         for (let msg of rows) {
@@ -104,13 +104,12 @@ class Message {
         return result.affectedRows > 0;
     }
 
-    // Get message count in room
-    static async getCount(roomId) {
-        const sql = 'SELECT COUNT(*) as count FROM messages WHERE room_id = ?';
-        const rows = await db.query(sql, [roomId]);
+    // Get message count in group
+    static async getCount(groupId) {
+        const sql = 'SELECT COUNT(*) as count FROM messages WHERE group_id = ?';
+        const rows = await db.query(sql, [groupId]);
         return rows[0].count;
     }
 }
 
 module.exports = Message;
-

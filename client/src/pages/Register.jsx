@@ -37,7 +37,7 @@ const Register = () => {
 
         try {
             await register(username, email, password);
-            navigate('/chat');
+            navigate('/login');
         } catch (err) {
             const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
             setError(errorMessage);
