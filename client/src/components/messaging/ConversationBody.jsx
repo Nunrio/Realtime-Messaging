@@ -214,10 +214,10 @@ const ConversationBody = ({ group }) => {
             </svg>
           </div>
           <h2 className="text-xl font-semibold text-gray-700 mb-2">
-            Select a group
+            Select contacts
           </h2>
           <p className="text-gray-500 max-w-xs">
-            Choose a group from the list to start messaging
+            Choose contacts from the list to start messaging
           </p>
         </div>
       </div>
