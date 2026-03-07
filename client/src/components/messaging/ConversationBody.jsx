@@ -8,9 +8,6 @@ import Message from '../Message';
 import TypingIndicator from '../TypingIndicator';
 import OnlineUsers from '../OnlineUsers';
 import CollaborativeNote from '../CollaborativeNote';
-import ReactionPicker from '../ReactionPicker';
-
-const REACTIONS = ['👍', '❤️', '😂', '🔥', '😮', '😢', '🎉', '👋'];
 
 const ConversationBody = ({ group }) => {
   const { groupId: paramGroupId } = useParams();
@@ -269,7 +266,7 @@ const ConversationBody = ({ group }) => {
           {activeTab === 'chat' ? (
             <div className="h-full flex flex-col">
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 messages-container">
                 {loading ? (
                   <div className="flex justify-center items-center h-full">
                     <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#1E90FF]"></div>
@@ -290,7 +287,6 @@ const ConversationBody = ({ group }) => {
                       onReact={handleReaction}
                       showReactions={showReactions}
                       setShowReactions={setShowReactions}
-                      reactions={REACTIONS}
                     />
                   ))
                 )}

@@ -6,7 +6,6 @@ const Reaction = {
         const sql = `
             INSERT INTO reactions (message_id, user_id, reaction_type) 
             VALUES (?, ?, ?)
-            ON DUPLICATE KEY UPDATE reaction_type = VALUES(reaction_type)
         `;
         return await db.query(sql, [messageId, userId, reactionType]);
     },

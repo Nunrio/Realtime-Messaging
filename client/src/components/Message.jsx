@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactionPicker from './ReactionPicker';
 
-const Message = ({ message, currentUser, onReact, showReactions, setShowReactions, reactions }) => {
+const Message = ({ message, currentUser, onReact, showReactions, setShowReactions }) => {
     const [showAllReactions, setShowAllReactions] = useState(false);
     const reactionPickerRef = useRef(null);
+    const reactionButtonRef = useRef(null);
+    const [pickerStyle, setPickerStyle] = useState({});
 
     const isOwn = message.user_id === currentUser?.id;
 
@@ -16,6 +19,30 @@ const Message = ({ message, currentUser, onReact, showReactions, setShowReaction
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [setShowReactions]);
+
+    // Calculate picker position synchronously when showing
+    const handleReactionButtonClick = (e) => {
+        e.stopPropagation();
+        
+        if (showReactions === message.id) {
+            setShowReactions(null);
+            setPickerStyle({});
+        } else {
+            // Calculate position immediately before setting state
+            if (reactionButtonRef.current) {
+                const button = reactionButtonRef.current.getBoundingClientRect();
+                const newStyle = {
+                    position: 'fixed',
+                    left: button.left + (button.width / 2),
+                    top: button.top - 8,
+                    transform: 'translate(-50%, -100%)',
+                    zIndex: 9999
+                };
+                setPickerStyle(newStyle);
+            }
+            setShowReactions(message.id);
+        }
+    };
 
     const formatTime = (timestamp) => {
         const date = new Date(timestamp);
@@ -31,7 +58,7 @@ const Message = ({ message, currentUser, onReact, showReactions, setShowReaction
 
     return (
         <div className={`flex ${isOwn ? 'justify-end' : 'justify-start'} message-enter`}>
-            <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'}`}>
+            <div className={`max-w-[70%] ${isOwn ? 'order-2' : 'order-1'} relative`}>
                 <div className={`flex items-end gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
                     <div className={`px-4 py-2 rounded-lg ${
                         isOwn 
@@ -48,8 +75,9 @@ const Message = ({ message, currentUser, onReact, showReactions, setShowReaction
                     </div>
                     
                     <button
-                        onClick={() => setShowReactions(showReactions === message.id ? null : message.id)}
-                        className="text-gray-400 hover:text-gray-600 p-1"
+                        ref={reactionButtonRef}
+                        onClick={handleReactionButtonClick}
+                        className="text-gray-400 hover:text-gray-600 p-1 self-center"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -84,25 +112,23 @@ const Message = ({ message, currentUser, onReact, showReactions, setShowReaction
                         )}
                     </div>
                 )}
-
-                {/* Reaction Picker */}
-                {showReactions === message.id && (
-                    <div 
-                        ref={reactionPickerRef}
-                        className="absolute mt-1 bg-white rounded-lg shadow-lg border p-2 flex gap-1 z-10"
-                    >
-                        {reactions.map((reaction) => (
-                            <button
-                                key={reaction}
-                                onClick={(e) => handleReactionClick(e, reaction)}
-                                className="text-xl hover:bg-gray-100 p-1 rounded transition"
-                            >
-                                {reaction}
-                            </button>
-                        ))}
-                    </div>
-                )}
             </div>
+
+            {/* Reaction Picker - Fixed positioning to overflow beyond container */}
+            {showReactions === message.id && (
+                <div 
+                    ref={reactionPickerRef}
+                    style={pickerStyle}
+                >
+                    <ReactionPicker 
+                        onSelect={(reaction) => handleReactionClick({ stopPropagation: () => {} }, reaction)}
+                        onClose={() => {
+                            setShowReactions(null);
+                            setPickerStyle({});
+                        }}
+                    />
+                </div>
+            )}
         </div>
     );
 };
