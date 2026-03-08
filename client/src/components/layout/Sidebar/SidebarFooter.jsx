@@ -1,7 +1,7 @@
 import React from 'react';
 import { Settings, LogOut } from './icons/sidebarIcons';
 
-const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout }) => {
+const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout, onOpenSettings }) => {
   // Get user display info
   const hasDisplayName = user?.display_name !== null && user?.display_name !== undefined;
   const displayName = user?.display_name || user?.username || 'User';
@@ -92,7 +92,9 @@ const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout })
         } bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50`}>
           <button
             onClick={() => {
-              // Future: Navigate to settings
+              if (onOpenSettings) {
+                onOpenSettings();
+              }
               onProfileClick(); // Close menu
             }}
             className="w-full flex items-center px-4 py-3 text-black hover:bg-gray-50 transition-colors"

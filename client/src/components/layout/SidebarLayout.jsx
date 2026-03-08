@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import Sidebar from './Sidebar/Sidebar';
+import SettingsModal from '../settings/SettingsModal';
 
 const SidebarLayout = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
+  const [showSettings, setShowSettings] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // If still loading auth state, don't render anything
   if (loading) {
@@ -23,12 +26,21 @@ const SidebarLayout = ({ children }) => {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar onOpenSettings={() => setShowSettings(true)} />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden">
         {children}
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal 
+        isOpen={showSettings} 
+        onClose={() => setShowSettings(false)} 
+        user={user}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onUnsavedChangesChange={setHasUnsavedChanges}
+      />
     </div>
   );
 };

@@ -74,6 +74,34 @@ class User {
         const sql = 'UPDATE users SET status = ?, last_seen = NOW() WHERE id = ?';
         return await db.query(sql, [status, userId]);
     }
+
+    // Update user profile
+    static async update(userId, updateData) {
+        const fields = [];
+        const values = [];
+
+        // Build dynamic update query
+        Object.keys(updateData).forEach((key) => {
+            fields.push(`${key} = ?`);
+            values.push(updateData[key]);
+        });
+
+        if (fields.length === 0) {
+            return await User.findById(userId);
+        }
+
+        values.push(userId);
+        const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+        await db.query(sql, values);
+
+        return await User.findById(userId);
+    }
+
+    // Update user password
+    static async updatePassword(userId, hashedPassword) {
+        const sql = 'UPDATE users SET password = ? WHERE id = ?';
+        return await db.query(sql, [hashedPassword, userId]);
+    }
 }
 
 module.exports = User;

@@ -6,7 +6,7 @@ import SidebarItems from './SidebarItems';
 import SidebarFooter from './SidebarFooter';
 import './Sidebar.css';
 
-const Sidebar = () => {
+const Sidebar = ({ onOpenSettings }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeItem, setActiveItem] = useState('chats');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -110,6 +110,7 @@ const Sidebar = () => {
         showMenu={showProfileMenu}
         onProfileClick={handleProfileClick}
         onLogout={handleLogout}
+        onOpenSettings={onOpenSettings}
       />
 
       {/* Logout Confirmation Modal */}
