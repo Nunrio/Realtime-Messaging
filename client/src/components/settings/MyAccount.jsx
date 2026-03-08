@@ -38,12 +38,22 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
   // Initialize form with user data
   useEffect(() => {
     if (user) {
+      // Format birthday for date input (ensure YYYY-MM-DD format)
+      let formattedBirthday = '';
+      if (user.birthday) {
+        // Handle different date formats from database
+        const dateObj = new Date(user.birthday);
+        if (!isNaN(dateObj.getTime())) {
+          formattedBirthday = dateObj.toISOString().split('T')[0];
+        }
+      }
+
       const initialData = {
         username: user.username || '',
         displayName: user.display_name || '',
         email: user.email || '',
         gender: user.gender || 'Prefer not to say',
-        birthday: user.birthday || '',
+        birthday: formattedBirthday,
         age: user.age || null,
         bio: user.bio || '',
         profilePicture: user.profile_picture || '',
@@ -53,7 +63,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
     }
   }, [user]);
 
-  // Auto-calculate age when birthday changes
+  // Auto-calculate age when birthday changes or on initial load
   useEffect(() => {
     if (formData.birthday) {
       const calculatedAge = calculateAge(formData.birthday);
@@ -402,7 +412,20 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
                 type="date"
                 name="birthday"
                 value={formData.birthday}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const newBirthday = e.target.value;
+                  setFormData(prev => {
+                    const newData = { ...prev, birthday: newBirthday };
+                    // Calculate age immediately when birthday changes
+                    if (newBirthday) {
+                      newData.age = calculateAge(newBirthday);
+                    } else {
+                      newData.age = null;
+                    }
+                    return newData;
+                  });
+                  setMessage({ type: '', text: '' });
+                }}
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
               />
             </div>
