@@ -1,12 +1,23 @@
 import React, { useState } from 'react';
-import { User, Share2, Bell, Search, LogOut, MessageCircle, Users, Archive } from 'lucide-react';
+import { User, Share2, Bell, Search, LogOut, MessageCircle, Users, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { logout } = useAuth();
 
-  const menuItems = [
+  // Admin settings menu items
+  const adminMenuItems = [
+    {
+      id: 'manage-users',
+      label: 'Manage Users',
+      icon: Shield,
+      adminOnly: true,
+    },
+  ];
+
+  // User settings menu items
+  const userMenuItems = [
     {
       id: 'my-account',
       label: 'My Account',
@@ -24,7 +35,12 @@ const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
     },
   ];
 
-  const filteredItems = menuItems.filter(item =>
+  // Filter items based on search query
+  const filteredAdminItems = adminMenuItems.filter(item =>
+    item.label.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const filteredUserItems = userMenuItems.filter(item =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -37,6 +53,9 @@ const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
   const hasDisplayName = user?.display_name !== null && user?.display_name !== undefined;
   const displayName = user?.display_name || user?.username || 'User';
   const avatarUrl = user?.profile_picture;
+  
+  // Check if user is admin
+  const isAdmin = user?.role === 'admin' || user?.role === 'moderator' || user?.role === 'founder';
 
   return (
     <div className="flex flex-col h-full">
@@ -91,9 +110,59 @@ const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
       </div>
 
       {/* Navigation List */}
-      <nav className="flex-1 py-2 px-2">
+      <nav className="flex-1 py-2 px-2 overflow-y-auto">
+        {/* Admin Settings Section */}
+        {isAdmin && (
+          <>
+            <div className="px-4 py-2">
+              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Admin Settings
+              </span>
+            </div>
+            <ul className="space-y-1 mb-2">
+              {filteredAdminItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeSection === item.id;
+
+                return (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => onSectionChange(item.id)}
+                      className={`
+                        flex items-center w-full rounded-lg px-4 py-3 transition-colors
+                        ${isActive 
+                          ? 'bg-[rgba(30,144,255,0.1)]' 
+                          : 'hover:bg-gray-100'
+                        }
+                      `}
+                    >
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${isActive ? 'bg-[#1E90FF]' : 'bg-gray-100'}`}>
+                        <Icon 
+                          size={20} 
+                          className={isActive ? 'text-white' : 'text-gray-600'} 
+                        />
+                      </div>
+                      <span className={`ml-3 text-sm font-medium whitespace-nowrap ${isActive ? 'text-[#1E90FF]' : 'text-gray-700'}`}>
+                        {item.label}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            {/* Divider */}
+            <div className="border-t border-gray-200 my-2"></div>
+          </>
+        )}
+
+        {/* User Settings Section */}
+        <div className="px-4 py-2">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            User Settings
+          </span>
+        </div>
         <ul className="space-y-1">
-          {filteredItems.map((item) => {
+          {filteredUserItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
 

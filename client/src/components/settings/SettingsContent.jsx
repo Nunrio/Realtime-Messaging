@@ -2,6 +2,7 @@ import React from 'react';
 import MyAccount from './MyAccount';
 import Socials from './Socials';
 import Notifications from './Notifications';
+import ManageUsers from './ManageUsers';
 
 const SettingsContent = ({ activeSection, user, onUnsavedChangesChange }) => {
   const renderContent = () => {
@@ -12,6 +13,8 @@ const SettingsContent = ({ activeSection, user, onUnsavedChangesChange }) => {
         return <Socials />;
       case 'notifications':
         return <Notifications />;
+      case 'manage-users':
+        return <ManageUsers />;
       default:
         return <MyAccount user={user} onUnsavedChangesChange={onUnsavedChangesChange} />;
     }

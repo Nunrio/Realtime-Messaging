@@ -40,8 +40,20 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordError, setPasswordError] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [shake, setShake] = useState(false);
+  const passwordInputRef = useRef(null);
 
-  // Initialize form with user data
+  // Trigger shake animation when password error changes
+  useEffect(() => {
+    if (passwordError) {
+      setShake(true);
+      // Remove shake class after animation completes
+      const timer = setTimeout(() => {
+        setShake(false);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [passwordError]);
   useEffect(() => {
     if (user) {
       // Format birthday for date input (ensure YYYY-MM-DD format)
@@ -347,14 +359,15 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
           
           {/* Step 1: Enter current password */}
           <div className="flex items-start gap-4">
-            <div className="flex-1">
+            <div className={`flex-1 ${shake ? 'animate-shake' : ''}`}>
               <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
               <input
+                ref={passwordInputRef}
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter current password"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent ${shake ? 'border-red-500' : 'border-gray-200'}`}
               />
               {passwordError && (
                 <p className="text-xs text-red-500 mt-1">{passwordError}</p>
@@ -378,24 +391,10 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Personal Info</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Gender */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-              <select
-                name="gender"
-                value={formData.gender}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
-              >
-                {genderOptions.map(option => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-
+          {/* Birthday and Age Row */}
+          <div className="flex gap-4 mb-6">
             {/* Birthday */}
-            <div>
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">Birthday</label>
               <input
                 type="date"
@@ -405,7 +404,6 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
                   const newBirthday = e.target.value;
                   setFormData(prev => {
                     const newData = { ...prev, birthday: newBirthday };
-                    // Calculate age immediately when birthday changes
                     if (newBirthday) {
                       newData.age = calculateAge(newBirthday);
                     } else {
@@ -420,21 +418,39 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
             </div>
 
             {/* Age - Auto-calculated */}
-            <div>
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">Age</label>
               <input
                 type="number"
                 value={formData.age || ''}
                 readOnly
-                placeholder="Auto-calculated from birthday"
+                placeholder="Auto-calculated"
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-500"
               />
-              <p className="text-xs text-gray-400 mt-1">Automatically calculated from birthday</p>
             </div>
           </div>
 
-          {/* Bio */}
-          <div className="mt-6">
+          {/* Gender - Same width as Birthday/Age row */}
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+              >
+                {genderOptions.map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            {/* Empty div to match the Birthday/Age row width */}
+            <div className="flex-1"></div>
+          </div>
+
+          {/* Bio - Full width */}
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Bio</label>
             <textarea
               name="bio"
