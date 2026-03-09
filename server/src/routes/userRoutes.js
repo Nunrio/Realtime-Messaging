@@ -3,7 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { verifyToken } = require('../config/auth');
-const { updateProfile, updatePassword, uploadProfilePicture } = require('../controllers/userController');
+const { updateProfile, updatePassword, verifyCurrentPassword, uploadProfilePicture } = require('../controllers/userController');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -30,6 +30,11 @@ router.use(verifyToken);
 // @desc    Update user profile
 // @access  Private
 router.put('/profile', updateProfile);
+
+// @route   POST /api/users/verify-password
+// @desc    Verify current password
+// @access  Private
+router.post('/verify-password', verifyCurrentPassword);
 
 // @route   PUT /api/users/password
 // @desc    Update user password

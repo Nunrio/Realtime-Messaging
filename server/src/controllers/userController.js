@@ -58,27 +58,18 @@ const updateProfile = async (req, res) => {
   }
 };
 
-// Update user password
-const updatePassword = async (req, res) => {
+// Verify current password - Step 1 of password change
+const verifyCurrentPassword = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const { currentPassword } = req.body;
 
-    // Validation
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ message: 'Please provide all password fields' });
+    if (!currentPassword) {
+      return res.status(400).json({ message: 'Please provide your current password' });
     }
 
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({ message: 'New passwords do not match' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters' });
-    }
-
-    // Get current user to verify current password
-    const user = await User.findById(userId);
+    // Get current user with password
+    const user = await User.findByIdWithPassword(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -87,6 +78,35 @@ const updatePassword = async (req, res) => {
     const isMatch = await User.verifyPassword(currentPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Password verified successfully'
+    });
+  } catch (error) {
+    console.error('Verify password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update user password - Step 2 (after current password is verified)
+const updatePassword = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { newPassword, confirmPassword } = req.body;
+
+    // Validation - now only requires new password (current password already verified)
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ message: 'Please provide new password and confirmation' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'New passwords do not match' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
     }
 
     // Hash new password
@@ -164,6 +184,7 @@ const uploadProfilePicture = async (req, res) => {
 
 module.exports = {
   updateProfile,
+  verifyCurrentPassword,
   updatePassword,
   uploadProfilePicture
 };

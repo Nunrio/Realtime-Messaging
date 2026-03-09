@@ -10,6 +10,14 @@ class User {
         return rows[0] || null;
     }
 
+    // Find user by ID with password (for password verification)
+    static async findByIdWithPassword(id) {
+        const sql = `SELECT id, username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_seen, created_at 
+                     FROM users WHERE id = ?`;
+        const rows = await db.query(sql, [id]);
+        return rows[0] || null;
+    }
+
     // Find user by email
     static async findByEmail(email) {
         const sql = 'SELECT * FROM users WHERE email = ?';

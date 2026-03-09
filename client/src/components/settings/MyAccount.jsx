@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Camera, Save, AlertTriangle } from 'lucide-react';
+import { Camera, Save, AlertTriangle, X, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { updateProfile, updatePassword, uploadProfilePicture } from '../../api/user';
+import { updateProfile, updatePassword, verifyCurrentPassword, uploadProfilePicture } from '../../api/user';
 import { calculateAge } from '../../utils/dateUtils';
 
 const MyAccount = ({ user, onUnsavedChangesChange }) => {
@@ -20,9 +21,11 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
     profilePicture: '',
   });
 
-  // Password change state
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
+  // Password change state - Step 1: Current password
+  const [currentPassword, setCurrentPassword] = useState('');
+  
+  // Password change state - Step 2: New password modal
+  const [newPasswordData, setNewPasswordData] = useState({
     newPassword: '',
     confirmPassword: '',
   });
@@ -30,9 +33,12 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
   // UI state
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   const [isPasswordSaving, setIsPasswordSaving] = useState(false);
   const [originalData, setOriginalData] = useState(null);
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // Initialize form with user data
@@ -89,13 +95,6 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setMessage({ type: '', text: '' });
-  };
-
-  // Handle password input changes
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
     setMessage({ type: '', text: '' });
   };
 
@@ -180,38 +179,53 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
     }
   };
 
-  // Handle password change
-  const handlePasswordChangeSubmit = async (e) => {
+  // Handle verify current password - Step 1
+  const handleVerifyPassword = async (e) => {
+    if (e) e.preventDefault();
+    setPasswordError('');
+    setIsVerifyingPassword(true);
+
+    try {
+      await verifyCurrentPassword(currentPassword);
+      // If successful, open the modal for new password
+      setShowPasswordModal(true);
+      setCurrentPassword('');
+    } catch (error) {
+      setPasswordError(error.response?.data?.message || 'Current password is incorrect');
+    } finally {
+      setIsVerifyingPassword(false);
+    }
+  };
+
+  // Handle new password change - Step 2
+  const handleNewPasswordChange = async (e) => {
     e.preventDefault();
-    setMessage({ type: '', text: '' });
+    setPasswordError('');
 
     // Validate passwords match
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setMessage({ type: 'error', text: 'New passwords do not match' });
+    if (newPasswordData.newPassword !== newPasswordData.confirmPassword) {
+      setPasswordError('New passwords do not match');
       return;
     }
 
-    if (passwordData.newPassword.length < 6) {
-      setMessage({ type: 'error', text: 'Password must be at least 6 characters' });
+    if (newPasswordData.newPassword.length < 6) {
+      setPasswordError('Password must be at least 6 characters');
       return;
     }
 
     setIsPasswordSaving(true);
     try {
       await updatePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword,
-        confirmPassword: passwordData.confirmPassword,
+        newPassword: newPasswordData.newPassword,
+        confirmPassword: newPasswordData.confirmPassword,
       });
 
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
+      // Close modal and reset
+      setShowPasswordModal(false);
+      setNewPasswordData({ newPassword: '', confirmPassword: '' });
       setMessage({ type: 'success', text: 'Password updated successfully' });
     } catch (error) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update password' });
+      setPasswordError(error.response?.data?.message || 'Failed to update password');
     } finally {
       setIsPasswordSaving(false);
     }
@@ -327,59 +341,34 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
           </div>
         </div>
 
-        {/* Account Security Section */}
+        {/* Account Security Section - Two Step Password Change */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Account Security</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Current Password */}
-            <div>
+          {/* Step 1: Enter current password */}
+          <div className="flex items-start gap-4">
+            <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
               <input
                 type="password"
-                name="currentPassword"
-                value={passwordData.currentPassword}
-                onChange={handlePasswordChange}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
                 placeholder="Enter current password"
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
               />
+              {passwordError && (
+                <p className="text-xs text-red-500 mt-1">{passwordError}</p>
+              )}
             </div>
-
-            {/* New Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={passwordData.newPassword}
-                onChange={handlePasswordChange}
-                placeholder="Enter new password"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
-              />
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={passwordData.confirmPassword}
-                onChange={handlePasswordChange}
-                placeholder="Confirm new password"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
-              />
-            </div>
-
-            {/* Change Password Button */}
-            <div className="flex items-end">
+            <div className="pt-7">
               <button
                 type="button"
-                onClick={handlePasswordChangeSubmit}
-                disabled={isPasswordSaving || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
-                className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleVerifyPassword}
+                disabled={isVerifyingPassword || !currentPassword}
+                className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center whitespace-nowrap"
               >
-                {isPasswordSaving ? 'Changing...' : 'Change Password'}
+                <Lock size={18} className="mr-2" />
+                {isVerifyingPassword ? 'Verifying...' : 'Change Password'}
               </button>
             </div>
           </div>
@@ -486,6 +475,86 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
           </div>
         )}
       </form>
+
+      {/* Password Change Modal - Step 2 */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div 
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowPasswordModal(false)}
+          />
+          
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6 z-10">
+            {/* Close Button */}
+            <button
+              onClick={() => setShowPasswordModal(false)}
+              className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <X size={20} className="text-gray-500" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Change Password</h2>
+              <p className="text-gray-500 mt-1">Enter your new password below</p>
+            </div>
+
+            {/* Error Message */}
+            {passwordError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {passwordError}
+              </div>
+            )}
+
+            {/* New Password Form */}
+            <form onSubmit={handleNewPasswordChange}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                  <input
+                    type="password"
+                    value={newPasswordData.newPassword}
+                    onChange={(e) => setNewPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                    placeholder="Enter new password"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                  <input
+                    type="password"
+                    value={newPasswordData.confirmPassword}
+                    onChange={(e) => setNewPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                    placeholder="Confirm new password"
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPasswordSaving || !newPasswordData.newPassword || !newPasswordData.confirmPassword}
+                  className="px-4 py-2 bg-[#1E90FF] text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isPasswordSaving ? 'Saving...' : 'Save Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

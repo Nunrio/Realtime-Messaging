@@ -11,8 +11,18 @@ export const updateProfile = async (profileData) => {
 };
 
 /**
+ * Verify current password
+ * @param {string} currentPassword - Current password to verify
+ * @returns {Promise<Object>} - Success response
+ */
+export const verifyCurrentPassword = async (currentPassword) => {
+  const response = await axiosInstance.post('/users/verify-password', { currentPassword });
+  return response.data;
+};
+
+/**
  * Update user password
- * @param {Object} passwords - Current and new password
+ * @param {Object} passwords - New password
  * @returns {Promise<Object>} - Response message
  */
 export const updatePassword = async (passwords) => {
