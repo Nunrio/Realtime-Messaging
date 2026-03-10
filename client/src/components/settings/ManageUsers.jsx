@@ -466,7 +466,7 @@ const ManageUsers = () => {
         <div className="p-6">
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+<h1 className="text-xl font-bold text-gray-900 flex items-center">
                     <Shield size={28} className="mr-3 text-[#1E90FF]" />
                     Manage Users
                 </h1>

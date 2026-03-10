@@ -37,7 +37,7 @@ const Socials = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Socials</h1>
+<h1 className="text-lg font-bold text-gray-900">Socials</h1>
         <p className="text-gray-500 mt-1">Link your social media accounts</p>
       </div>
 
@@ -52,7 +52,7 @@ const Socials = () => {
 
       {/* Future Implementation Preview */}
       <div className="mt-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Future Features</h2>
+<h2 className="text-base font-semibold text-gray-900 mb-4">Future Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {socialPlatforms.map((platform) => {
             const Icon = platform.icon;

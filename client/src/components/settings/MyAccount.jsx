@@ -249,7 +249,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
     <div className="p-6 pb-24">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Account</h1>
+<h1 className="text-lg font-bold text-gray-900">My Account</h1>
         <p className="text-gray-500 mt-1">Manage your profile information</p>
       </div>
 
@@ -270,7 +270,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
 
       {/* Profile Picture Section */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Profile Picture</h2>
+<h2 className="text-sm font-semibold text-gray-900 mb-4">Profile Picture</h2>
         <div className="flex items-center">
           <div className="relative">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100">
@@ -309,7 +309,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
       <form onSubmit={handleSaveProfile}>
         {/* Profile Info Section */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Profile Info</h2>
+<h2 className="text-sm font-semibold text-gray-900 mb-4 border-b pb-2">Profile Info</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Username - Display Only */}
@@ -355,7 +355,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
 
         {/* Account Security Section - Two Step Password Change */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Account Security</h2>
+<h2 className="text-sm font-semibold text-gray-900 mb-4 border-b pb-2">Account Security</h2>
           
           {/* Step 1: Enter current password */}
           <div className="flex items-start gap-4">
@@ -389,7 +389,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
 
         {/* Personal Info Section */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 border-b pb-2">Personal Info</h2>
+<h2 className="text-sm font-semibold text-gray-900 mb-4 border-b pb-2">Personal Info</h2>
           
           {/* Birthday and Age Row */}
           <div className="flex gap-4 mb-6">

@@ -37,7 +37,7 @@ const Notifications = () => {
     <div className="p-6">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+<h1 className="text-lg font-bold text-gray-900">Notifications</h1>
         <p className="text-gray-500 mt-1">Manage your notification preferences</p>
       </div>
 
@@ -52,7 +52,7 @@ const Notifications = () => {
 
       {/* Future Implementation Preview */}
       <div className="mt-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Future Features</h2>
+<h2 className="text-base font-semibold text-gray-900 mb-4">Future Features</h2>
         <div className="space-y-4">
           {notificationSettings.map((setting) => {
             const Icon = setting.icon;
