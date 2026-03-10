@@ -14,7 +14,7 @@ const ConversationBody = ({ group }) => {
   const groupId = paramGroupId || group?.id;
   
   const { user } = useAuth();
-  const { socket, joinGroup, leaveGroup, sendMessage, sendTyping, addReaction, removeReaction, updateNote } = useSocket();
+  const { socket, joinGroup, leaveGroup, sendMessage, sendTyping, addReaction, removeReaction, updateNote, isMuted, muteError, setIsMuted } = useSocket();
   
   const [currentGroup, setCurrentGroup] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -312,18 +312,30 @@ const ConversationBody = ({ group }) => {
 
               {/* Message Input */}
               <form onSubmit={handleSendMessage} className="p-4 border-t">
+                {/* Mute Error Banner */}
+                {isMuted && (
+                  <div className="mb-3 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-700 flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      {muteError || 'You are muted and cannot send messages'}
+                    </p>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={handleTyping}
-                    placeholder="Type a message..."
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+                    placeholder={isMuted ? "You are muted" : "Type a message..."}
+                    disabled={isMuted}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   />
                   <button
                     type="submit"
-                    disabled={!newMessage.trim() || sending}
-                    className="bg-[#1E90FF] hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition disabled:opacity-50"
+                    disabled={!newMessage.trim() || sending || isMuted}
+                    className="bg-[#1E90FF] hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Send
                   </button>

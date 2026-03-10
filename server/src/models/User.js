@@ -110,6 +110,123 @@ class User {
         const sql = 'UPDATE users SET password = ? WHERE id = ?';
         return await db.query(sql, [hashedPassword, userId]);
     }
+
+    // Get all users with optional filters (for admin)
+    static async getAllWithFilters(search = '', role = '', status = '') {
+        let sql = `SELECT id, username, display_name, email, role, gender, profile_picture, status, 
+                   is_banned, banned_at, banned_reason, is_muted, muted_until, is_archived, archived_at, 
+                   last_seen, created_at FROM users WHERE 1=1`;
+        const params = [];
+
+        // Exclude archived users by default (they can't login)
+        // We'll handle this in the status filter
+
+        if (search) {
+            sql += ` AND (username LIKE ? OR display_name LIKE ? OR email LIKE ?)`;
+            const searchTerm = `%${search}%`;
+            params.push(searchTerm, searchTerm, searchTerm);
+        }
+
+        if (role && role !== 'all') {
+            sql += ` AND role = ?`;
+            params.push(role);
+        }
+
+        // Status is determined by is_banned, is_muted, is_archived
+        if (status && status !== 'all') {
+            switch (status) {
+                case 'banned':
+                    sql += ` AND is_banned = TRUE`;
+                    break;
+                case 'muted':
+                    sql += ` AND is_muted = TRUE`;
+                    break;
+                case 'archived':
+                    sql += ` AND is_archived = TRUE`;
+                    break;
+                case 'active':
+                    sql += ` AND is_banned = FALSE AND is_muted = FALSE AND is_archived = FALSE`;
+                    break;
+            }
+        }
+
+        sql += ` ORDER BY created_at DESC`;
+
+        return await db.query(sql, params);
+    }
+
+    // Get user by ID (including moderation fields)
+    static async findByIdWithModeration(id) {
+        const sql = `SELECT id, username, display_name, email, role, gender, birthday, age, bio, 
+                     profile_picture, status, is_banned, banned_at, banned_reason, is_muted, 
+                     muted_until, is_archived, archived_at, last_seen, created_at 
+                     FROM users WHERE id = ?`;
+        const rows = await db.query(sql, [id]);
+        return rows[0] || null;
+    }
+
+    // Determine user status based on moderation fields
+    static getStatus(user) {
+        if (user.is_archived) return 'Archived';
+        if (user.is_banned) return 'Banned';
+        if (user.is_muted) return 'Muted';
+        return 'Active';
+    }
+
+    // Mute user
+    static async muteUser(userId, mutedUntil = null) {
+        const sql = `UPDATE users SET is_muted = TRUE, muted_until = ? WHERE id = ?`;
+        return await db.query(sql, [mutedUntil, userId]);
+    }
+
+    // Unmute user
+    static async unmuteUser(userId) {
+        const sql = `UPDATE users SET is_muted = FALSE, muted_until = NULL WHERE id = ?`;
+        return await db.query(sql, [userId]);
+    }
+
+    // Ban user
+    static async banUser(userId, reason = null) {
+        const sql = `UPDATE users SET is_banned = TRUE, banned_at = NOW(), banned_reason = ? WHERE id = ?`;
+        return await db.query(sql, [reason, userId]);
+    }
+
+    // Unban user
+    static async unbanUser(userId) {
+        const sql = `UPDATE users SET is_banned = FALSE, banned_at = NULL, banned_reason = NULL WHERE id = ?`;
+        return await db.query(sql, [userId]);
+    }
+
+    // Archive user (soft delete)
+    static async archiveUser(userId) {
+        const sql = `UPDATE users SET is_archived = TRUE, archived_at = NOW() WHERE id = ?`;
+        return await db.query(sql, [userId]);
+    }
+
+    // Unarchive user
+    static async unarchiveUser(userId) {
+        const sql = `UPDATE users SET is_archived = FALSE, archived_at = NULL WHERE id = ?`;
+        return await db.query(sql, [userId]);
+    }
+
+    // Change user role
+    static async changeRole(userId, newRole) {
+        const validRoles = ['user', 'moderator', 'admin', 'founder'];
+        if (!validRoles.includes(newRole)) {
+            throw new Error('Invalid role');
+        }
+        const sql = `UPDATE users SET role = ? WHERE id = ?`;
+        return await db.query(sql, [newRole, userId]);
+    }
+
+    // Check if user can login (not banned, not archived)
+    static async canLogin(userId) {
+        const user = await User.findByIdWithModeration(userId);
+        if (!user) return { canLogin: false, reason: 'User not found' };
+        if (user.is_banned) return { canLogin: false, reason: 'Your account has been banned', banned_at: user.banned_at, banned_reason: user.banned_reason };
+        if (user.is_archived) return { canLogin: false, reason: 'Your account has been archived' };
+        return { canLogin: true };
+    }
 }
 
 module.exports = User;

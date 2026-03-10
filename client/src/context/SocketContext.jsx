@@ -16,6 +16,8 @@ export const SocketProvider = ({ children }) => {
     const { token, isAuthenticated } = useAuth();
     const [socket, setSocket] = useState(null);
     const [connected, setConnected] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [muteError, setMuteError] = useState(null);
 
     useEffect(() => {
         if (isAuthenticated && token) {
@@ -30,6 +32,19 @@ export const SocketProvider = ({ children }) => {
                 setConnected(false);
             });
 
+            // Listen for user status (mute/ban status)
+            socketInstance.on('user_status', (data) => {
+                setIsMuted(data.is_muted);
+            });
+
+            // Listen for errors (including mute errors)
+            socketInstance.on('error', (data) => {
+                if (data.message && data.message.includes('muted')) {
+                    setMuteError(data.message);
+                    setIsMuted(true);
+                }
+            });
+
             return () => {
                 disconnectSocket();
             };
@@ -37,6 +52,8 @@ export const SocketProvider = ({ children }) => {
             disconnectSocket();
             setSocket(null);
             setConnected(false);
+            setIsMuted(false);
+            setMuteError(null);
         }
     }, [isAuthenticated, token]);
 
@@ -85,6 +102,9 @@ export const SocketProvider = ({ children }) => {
     const value = {
         socket,
         connected,
+        isMuted,
+        muteError,
+        setIsMuted,
         joinGroup,
         leaveGroup,
         sendMessage,

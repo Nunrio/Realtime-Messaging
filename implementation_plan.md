@@ -1,196 +1,105 @@
-# Implementation Plan
+# User Management System Implementation Plan
 
-## [Overview]
+## 1. Information Gathered
 
-Create a Settings modal overlay component that functions as a full-featured settings interface for user profile management. The modal will display as an 85% viewport overlay with a two-column layout (sidebar navigation + content area), supporting multiple closing methods and smooth animations. The implementation will include the My Account page with all profile fields following the existing database schema, with age auto-calculated from birthday.
+### Current State Analysis:
+- **Database**: Already has `role` field (ENUM: user, moderator, admin, founder) but missing moderation fields (is_banned, is_muted, is_archived, timestamps)
+- **Backend**: User model has basic CRUD operations; no admin-specific endpoints; Socket handler doesn't check mute/ban status
+- **Frontend**: ManageUsers.jsx is placeholder; SettingsSidebar already has admin section with role check
+- **Auth**: JWT-based auth with role stored in token
 
-## [Types]
+### Key Dependencies:
+- `server/src/models/User.js` - User model
+- `server/src/controllers/userController.js` - User controllers  
+- `server/src/routes/userRoutes.js` - User routes
+- `server/src/config/auth.js` - JWT verification
+- `server/src/sockets/chatHandler.js` - Socket handlers for real-time
+- `client/src/api/user.js` - Client API calls
+- `client/src/components/settings/ManageUsers.jsx` - Main UI component
 
-### Settings Navigation Item Type
-```javascript
-{
-  id: string,          // 'my-account' | 'socials' | 'notifications'
-  label: string,       // Display label
-  icon: LucideIcon,    // Icon component from lucide-react
-}
-```
+---
 
-### User Profile Form Data Type
-```javascript
-{
-  username: string,           // Display only (disabled)
-  displayName: string,       // Editable
-  email: string,             // Display only (disabled)
-  currentPassword: string,  // For password change
-  newPassword: string,       // For password change
-  confirmPassword: string,  // For password change
-  gender: 'Male' | 'Female' | 'Other' | 'Prefer not to say',
-  birthday: string | null,   // ISO date string
-  age: number | null,        // Auto-calculated
-  bio: string,               // Max 300 characters
-  profilePicture: string | null,  // URL
-}
-```
+## 2. Implementation Plan
 
-### Settings Modal Props Type
-```javascript
-{
-  isOpen: boolean,           // Control modal visibility
-  onClose: function,         // Close handler
-}
-```
+### Phase 1: Database Changes
+1. Add migration script for new columns to users table
 
-## [Files]
+### Phase 2: Backend - User Model Updates
+1. Add new columns to User model queries
+2. Add static methods: getAllUsers, getUserById, updateUserRole, muteUser, unmuteUser, banUser, unbanUser, archiveUser
 
-### New Files to be Created
+### Phase 3: Backend - Admin Controllers
+1. Create adminController.js with functions:
+   - getAllUsers (with search/filter)
+   - muteUser, unmuteUser
+   - banUser, unbanUser  
+   - changeUserRole
+   - archiveUser
 
-1. **`client/src/components/settings/SettingsModal.jsx`**
-   - Main Settings modal component with overlay, animations, and layout
-   - Handles Escape key, click outside to close
-   - Contains two-column layout structure
+### Phase 4: Backend - Admin Routes
+1. Create adminRoutes.js with protected endpoints
+2. Add role verification middleware
+3. Register routes in index.js
 
-2. **`client/src/components/settings/SettingsSidebar.jsx`**
-   - Left sidebar within the modal
-   - Reuses design patterns from SidebarHeader
-   - Search bar for filtering settings (future)
-   - Navigation list for settings sections
-   - Logout button at bottom
+### Phase 5: Backend - Socket Handler Updates
+1. Check mute/ban status on message send
+2. Emit userMuted/userBanned events for real-time updates
 
-3. **`client/src/components/settings/SettingsContent.jsx`**
-   - Right content area that switches based on active section
-   - Renders MyAccount, Socials, or Notifications components
+### Phase 6: Frontend - API Layer
+1. Add admin API calls to client/src/api/user.js
 
-4. **`client/src/components/settings/MyAccount.jsx`**
-   - My Account page with all form fields
-   - Implements profile picture upload/preview
-   - Auto-calculates age from birthday
-   - Handles password change
-   - Shows unsaved changes warning
+### Phase 7: Frontend - UI Components
+1. Build ManageUsers.jsx with:
+   - Search bar
+   - Role filter dropdown
+   - Status filter dropdown
+   - User table with all columns
+   - Action dropdown per row (permission-based)
+   - Confirmation dialogs for destructive actions
+2. Add role-based permission helpers
 
-5. **`client/src/components/settings/Socials.jsx`**
-   - Placeholder component for social links (future expansion)
+### Phase 8: Integration & Testing
+1. Connect frontend to backend
+2. Test RBAC permissions
+3. Test real-time mute updates
 
-6. **`client/src/components/settings/Notifications.jsx`**
-   - Placeholder component for notification settings (future expansion)
+---
 
-7. **`client/src/components/settings/SettingsHeader.jsx`**
-   - Reusable header component matching SidebarHeader style
+## 3. Files to Edit/Create
 
-8. **`client/src/api/user.js`**
-   - New API module for user profile operations
-   - Functions: updateProfile, updatePassword, uploadProfilePicture
+### New Files:
+- `server/src/controllers/adminController.js` (NEW)
+- `server/src/routes/adminRoutes.js` (NEW)
+- `database/migrations/add_moderation_fields.sql` (NEW)
 
-9. **`server/src/controllers/userController.js`**
-   - New backend controller for user profile operations
-   - Functions: updateProfile, updatePassword
+### Modified Files:
+- `database/schema.sql` - Add moderation columns
+- `server/src/models/User.js` - Add admin methods
+- `server/src/index.js` - Register admin routes
+- `server/src/sockets/chatHandler.js` - Add mute/ban checks
+- `server/src/config/auth.js` - Include role in JWT
+- `client/src/api/user.js` - Add admin API calls
+- `client/src/components/settings/ManageUsers.jsx` - Full implementation
 
-10. **`server/src/routes/userRoutes.js`**
-    - New router for user profile endpoints
+---
 
-### Existing Files to be Modified
+## 4. Permission Matrix
 
-1. **`client/src/App.jsx`**
-   - Add state for settings modal visibility
-   - Pass onOpenSettings to SidebarLayout or Sidebar
+| Feature | Moderator | Admin | Founder |
+|---------|-----------|-------|---------|
+| View All Users | ✅ | ✅ | ✅ |
+| Search/Filter | ✅ | ✅ | ✅ |
+| Mute Users | ✅ | ✅ | ✅ |
+| Ban/Unban | ❌ | ✅ | ✅ |
+| Change Roles | ❌ | ❌ | ✅ |
+| Archive Users | ❌ | ❌ | ✅ |
 
-2. **`client/src/components/layout/Sidebar/SidebarFooter.jsx`**
-   - Add onClick handler to Settings button to open SettingsModal
+---
 
-3. **`client/src/components/layout/SidebarLayout.jsx`**
-   - Add SettingsModal component that renders conditionally when user is authenticated
+## 5. Followup Steps
 
-4. **`server/src/index.js`**
-   - Add new user routes: `app.use('/api/users', userRoutes);`
-
-## [Functions]
-
-### New Frontend Functions
-
-1. **`calculateAge(birthday: string): number | null`**
-   - File: `client/src/utils/dateUtils.js` (new file)
-   - Purpose: Calculate age from birthday date string
-   - Returns null if birthday is invalid or in future
-
-2. **`updateProfile(profileData: object): Promise`**
-   - File: `client/src/api/user.js`
-   - Purpose: Send profile update to backend
-
-3. **`updatePassword(passwords: object): Promise`**
-   - File: `client/src/api/user.js`
-   - Purpose: Handle password change request
-
-### New Backend Functions
-
-1. **`updateProfile` (controller function)**
-   - File: `server/src/controllers/userController.js`
-   - Purpose: Update user profile fields (display_name, gender, birthday, bio)
-
-2. **`updatePassword` (controller function)**
-   - File: `server/src/controllers/userController.js`
-   - Purpose: Validate current password and update to new password
-
-## [Classes]
-
-No new classes required. Using functional React components with hooks.
-
-## [Dependencies]
-
-### New Dependencies
-- None required (using existing lucide-react for icons)
-
-### Existing Dependencies Used
-- `lucide-react` - Icons (already installed)
-- `axios` - API calls (already installed)
-- `react-router-dom` - Navigation (already installed)
-
-## [Testing]
-
-### Frontend Testing Strategy
-- Manual testing of modal opening/closing
-- Test Escape key handler
-- Test click outside to close
-- Test age calculation logic
-- Test form validation
-- Test profile picture upload preview
-
-### Backend Testing Strategy
-- Test profile update endpoint
-- Test password change with wrong current password
-- Test password change with matching new passwords
-
-## [Implementation Order]
-
-### Step 1: Create utility functions
-- [ ] Create `client/src/utils/dateUtils.js` with age calculation
-
-### Step 2: Create API layer
-- [ ] Create `client/src/api/user.js` with updateProfile and updatePassword
-- [ ] Create `server/src/controllers/userController.js`
-- [ ] Create `server/src/routes/userRoutes.js`
-- [ ] Update `server/src/index.js` to include user routes
-
-### Step 3: Create Settings Modal structure
-- [ ] Create `client/src/components/settings/SettingsModal.jsx` with overlay and layout
-- [ ] Implement animations (fade-in, scale-up)
-- [ ] Implement close handlers (Escape, X button, overlay click)
-
-### Step 4: Create Sidebar components
-- [ ] Create `client/src/components/settings/SettingsHeader.jsx`
-- [ ] Create `client/src/components/settings/SettingsSidebar.jsx` with navigation
-
-### Step 5: Create Content components
-- [ ] Create `client/src/components/settings/MyAccount.jsx` with full form
-- [ ] Create `client/src/components/settings/Socials.jsx` (placeholder)
-- [ ] Create `client/src/components/settings/Notifications.jsx` (placeholder)
-- [ ] Create `client/src/components/settings/SettingsContent.jsx` as content wrapper
-
-### Step 6: Integrate with application
-- [ ] Update `client/src/components/layout/SidebarLayout.jsx` to include SettingsModal
-- [ ] Update `client/src/components/layout/Sidebar/SidebarFooter.jsx` to open settings
-
-### Step 7: Test and validate
-- [ ] Test all closing methods
-- [ ] Test age auto-calculation
-- [ ] Test form validation
-- [ ] Test unsaved changes warning
+1. Run database migration
+2. Start server and test API endpoints
+3. Test real-time mute/ban functionality
+4. Verify UI permissions match backend
 

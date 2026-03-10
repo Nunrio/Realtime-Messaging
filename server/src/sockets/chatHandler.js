@@ -41,6 +41,32 @@ const setupChatHandlers = (io) => {
     io.on('connection', (socket) => {
         console.log(`User connected: ${socket.user.username} (${socket.id})`);
 
+        // Check if user is banned or archived on connect
+        (async () => {
+            try {
+                const user = await User.findByIdWithModeration(socket.user.id);
+                if (user) {
+                    if (user.is_banned) {
+                        socket.emit('error', { message: 'Your account has been banned.' });
+                        socket.disconnect();
+                        return;
+                    }
+                    if (user.is_archived) {
+                        socket.emit('error', { message: 'Your account has been archived.' });
+                        socket.disconnect();
+                        return;
+                    }
+                    // Send current mute status
+                    socket.emit('user_status', {
+                        is_muted: user.is_muted,
+                        muted_until: user.muted_until
+                    });
+                }
+            } catch (error) {
+                console.error('Error checking user status on connect:', error);
+            }
+        })();
+
         // Join a group
         socket.on('join_group', async ({ groupId }) => {
             try {
@@ -125,6 +151,13 @@ const setupChatHandlers = (io) => {
         socket.on('send_message', async ({ groupId, message }) => {
             try {
                 if (!message || message.trim() === '') return;
+
+                // Check if user is muted
+                const user = await User.findByIdWithModeration(socket.user.id);
+                if (user && user.is_muted) {
+                    socket.emit('error', { message: 'You are muted and cannot send messages.' });
+                    return;
+                }
 
                 const msg = await Message.create(groupId, socket.user.id, message);
                 

@@ -19,6 +19,14 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture VARCHAR(255) NULL,
     status ENUM('Online', 'away', 'do not disturb', 'invisible') DEFAULT 'Online',
     last_seen TIMESTAMP NULL,
+    -- Moderation fields
+    is_banned BOOLEAN DEFAULT FALSE,
+    banned_at DATETIME NULL,
+    banned_reason TEXT NULL,
+    is_muted BOOLEAN DEFAULT FALSE,
+    muted_until DATETIME NULL,
+    is_archived BOOLEAN DEFAULT FALSE,
+    archived_at DATETIME NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
