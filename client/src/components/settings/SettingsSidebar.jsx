@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { User, Share2, Bell, Search, LogOut, MessageCircle, Users, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Admin settings menu items
   const adminMenuItems = [
@@ -45,8 +48,17 @@ const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
   );
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
+    navigate('/login');
     onClose();
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
   };
 
   // Get user display info
@@ -208,6 +220,33 @@ const SettingsSidebar = ({ activeSection, onSectionChange, user, onClose }) => {
           </span>
         </button>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm mx-4">
+            <h2 className="text-xl font-bold mb-2 text-gray-900">Log Out</h2>
+            <p className="text-gray-600 mb-6">Are you sure you want to log out?</p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={cancelLogout}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 transition font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition font-medium"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

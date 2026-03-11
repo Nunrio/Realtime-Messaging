@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import SidebarHeader from './SidebarHeader';
@@ -84,6 +84,25 @@ const Sidebar = ({ onOpenSettings }) => {
   const cancelLogout = () => {
     setShowLogoutModal(false);
   };
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && showLogoutModal) {
+        setShowLogoutModal(false);
+      }
+    };
+
+    if (showLogoutModal) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showLogoutModal]);
 
   return (
     <div 
