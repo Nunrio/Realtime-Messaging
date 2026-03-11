@@ -74,7 +74,7 @@ const SettingsModal = ({ isOpen, onClose, user, hasUnsavedChanges, onUnsavedChan
       {/* Modal container with scale-up animation and shake effect */}
       <div 
         key={shakeKey}
-className={`relative bg-white rounded-xl shadow-2xl w-[85vw] h-[95vh] max-w-6xl animate-scale-up overflow-hidden flex ${shakeKey > 0 ? 'animate-shake' : ''}`}
+        className={`relative bg-white rounded-xl shadow-2xl w-[95vw] h-[95vh] max-w-[1600px] animate-scale-up overflow-hidden flex ${shakeKey > 0 ? 'animate-shake' : ''}`}
       >
         {/* Close button */}
         <button
