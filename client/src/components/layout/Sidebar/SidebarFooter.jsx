@@ -9,15 +9,16 @@ const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout, o
   const avatarUrl = user?.profile_picture;
   const userRole = user?.role;
 
+
   // Role display configuration
   const getRoleConfig = (role) => {
     switch (role) {
       case 'founder':
-        return { label: 'Founder', bgColor: '#00008B', textColor: '#FFFFFF' };
+        return { label: 'Founder', cssClass: 'role-badge role-badge-founder' };
       case 'admin':
-        return { label: 'Administrator', bgColor: '#8B0000', textColor: '#FFFFFF' };
+        return { label: 'Administrator', cssClass: 'role-badge role-badge-admin' };
       case 'moderator':
-        return { label: 'Moderator', bgColor: '#FF6B6B', textColor: '#FFFFFF' };
+        return { label: 'Moderator', cssClass: 'role-badge role-badge-moderator' };
       default:
         return null;
     }
@@ -31,10 +32,7 @@ const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout, o
       {/* Role Badge - Only show for Founder, Administrator, Moderator */}
       {shouldShowRole && isExpanded && (
         <div className="mb-2 flex justify-center">
-          <span 
-            className="inline-block px-2 py-1 text-xs font-semibold rounded-md"
-            style={{ backgroundColor: roleConfig.bgColor, color: roleConfig.textColor }}
-          >
+          <span className={roleConfig.cssClass}>
             {roleConfig.label}
           </span>
         </div>

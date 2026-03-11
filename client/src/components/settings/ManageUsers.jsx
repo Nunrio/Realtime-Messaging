@@ -142,14 +142,30 @@ const ManageUsers = () => {
     };
 
     const handleChangeRole = async (newRole) => {
+        // Prevent multiple clicks
+        if (actionLoading) return;
+        
+        if (!selectedUser || !selectedUser.id) {
+            console.error('No user selected for role change');
+            alert('Error: No user selected');
+            return;
+        }
+        
+        console.log(`Attempting to change role for user ${selectedUser.id} (${selectedUser.username}) to ${newRole}`);
+        
         setActionLoading(true);
         try {
-            await adminAPI.changeUserRole(selectedUser.id, newRole);
+            const response = await adminAPI.changeUserRole(selectedUser.id, newRole);
+            console.log('Role change success:', response);
+            alert(`Successfully changed ${selectedUser.username}'s role to ${newRole}`);
             await fetchUsers();
             setActionModal(null);
             setSelectedUser(null);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to change role');
+            console.error('Failed to change role:', err);
+            console.error('Error response:', err.response);
+            const errorMessage = err.response?.data?.message || err.message || 'Failed to change role';
+            alert(errorMessage);
         } finally {
             setActionLoading(false);
         }
@@ -195,22 +211,18 @@ const ManageUsers = () => {
         return <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-600 rounded">Active</span>;
     };
 
+
     const getRoleBadge = (role) => {
-        const colors = {
-            founder: 'bg-purple-100 text-purple-700',
-            admin: 'bg-blue-100 text-blue-700',
-            moderator: 'bg-indigo-100 text-indigo-700',
-            user: 'bg-gray-100 text-gray-600'
-        };
         return (
-            <span className={`px-2 py-1 text-xs font-medium rounded capitalize ${colors[role] || colors.user}`}>
+            <span className={`role-badge role-badge-${role}`}>
                 {role}
             </span>
         );
     };
 
     const renderActionModal = () => {
-        if (!actionModal || !selectedUser) return null;
+        // Don't render for 'role' - that's handled by renderRoleModal
+        if (!actionModal || actionModal === 'role' || !selectedUser) return null;
 
         const modals = {
             mute: {
@@ -466,7 +478,7 @@ const ManageUsers = () => {
         <div className="p-6">
             {/* Header */}
             <div className="mb-6">
-<h1 className="text-xl font-bold text-gray-900 flex items-center">
+                <h1 className="text-xl font-bold text-gray-900 flex items-center">
                     <Shield size={28} className="mr-3 text-[#1E90FF]" />
                     Manage Users
                 </h1>

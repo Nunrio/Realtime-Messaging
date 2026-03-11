@@ -150,6 +150,32 @@ body {
   20%, 40%, 60%, 80% { transform: translateX(4px); }
 }
 
+
 .animate-shake {
   animation: shake 0.5s ease-in-out;
+}
+
+/* Role Badge Colors - Used in Sidebar and ManageUsers */
+.role-badge {
+  @apply px-2 py-1 text-xs font-medium rounded capitalize;
+}
+
+.role-badge-founder {
+  background-color: #050363;
+  color: white;
+}
+
+.role-badge-admin {
+  background-color: #f70a1a;
+  color: white;
+}
+
+.role-badge-moderator {
+  background-color: #f55b65;
+  color: white;
+}
+
+.role-badge-user {
+  background-color: #e5e7eb;
+  color: #374151;
 }
