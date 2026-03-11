@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Toast from '../components/Toast';
+import Toast from '../components/toast/ToastService';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -9,7 +9,6 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [toast, setToast] = useState(null);
     
     const { login } = useAuth();
     const navigate = useNavigate();
@@ -23,25 +22,25 @@ const Login = () => {
             await login(email, password);
             navigate('/messages');
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Login failed. Please try again.';
-            setError(errorMessage);
-            setToast({ message: errorMessage, type: 'error' });
+            // Handle server errors (5xx) or network errors
+            if (err.response) {
+                // Server responded with error
+                const errorMessage = err.response.data?.message || 'Server error. Please try again later.';
+                setError(errorMessage);
+                Toast.error(errorMessage, "auth");
+            } else {
+                // Network error or server not responding
+                const errorMessage = 'Server error. Please try again later.';
+                setError(errorMessage);
+                Toast.error(errorMessage, "auth");
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const closeToast = () => setToast(null);
-
     return (
         <div className="h-screen bg-[#f9fafb] flex font-poppins overflow-hidden">
-            {toast && (
-                <Toast 
-                    message={toast.message} 
-                    type={toast.type} 
-                    onClose={closeToast} 
-                />
-            )}
             {/* Left Side - Content */}
             <div className="w-full lg:w-1/2 flex flex-col h-full">
                 {/* Logo */}

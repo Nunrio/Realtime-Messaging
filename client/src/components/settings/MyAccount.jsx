@@ -4,6 +4,7 @@ import { Camera, Save, AlertTriangle, X, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { updateProfile, updatePassword, verifyCurrentPassword, uploadProfilePicture } from '../../api/user';
 import { calculateAge } from '../../utils/dateUtils';
+import Toast from '../toast/ToastService';
 
 const MyAccount = ({ user, onUnsavedChangesChange }) => {
   const { setUser } = useAuth();
@@ -122,13 +123,13 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
     if (!allowedTypes.includes(file.type)) {
-      setMessage({ type: 'error', text: 'Only JPEG, JPG, PNG, WEBP, and GIF files are allowed' });
+      Toast.error('Only JPEG, JPG, PNG, WEBP, and GIF files are allowed');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'File size must be less than 5MB' });
+      Toast.error('File size must be less than 5MB');
       return;
     }
 
@@ -137,12 +138,12 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
       const response = await uploadProfilePicture(file);
       const newProfilePicture = response.profile_picture;
       setFormData(prev => ({ ...prev, profilePicture: newProfilePicture }));
-      setMessage({ type: 'success', text: 'Profile picture updated successfully' });
+      Toast.success('Profile picture updated successfully');
       
       // Update auth context
       setUser(prev => ({ ...prev, profile_picture: newProfilePicture }));
     } catch (error) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to upload profile picture' });
+      Toast.error(error.response?.data?.message || 'Failed to upload profile picture');
     } finally {
       setIsLoading(false);
       // Clear file input
@@ -183,9 +184,9 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
         bio: response.user.bio,
       }));
 
-      setMessage({ type: 'success', text: 'Profile updated successfully' });
+      Toast.success('Profile updated successfully');
     } catch (error) {
-      setMessage({ type: 'error', text: error.response?.data?.message || 'Failed to update profile' });
+      Toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
       setIsSaving(false);
     }
@@ -235,7 +236,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
       // Close modal and reset
       setShowPasswordModal(false);
       setNewPasswordData({ newPassword: '', confirmPassword: '' });
-      setMessage({ type: 'success', text: 'Password updated successfully' });
+      Toast.success('Password updated successfully');
     } catch (error) {
       setPasswordError(error.response?.data?.message || 'Failed to update password');
     } finally {

@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import MessagingPage from './pages/MessagingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import SidebarLayout from './components/layout/SidebarLayout';
+import ToastContainer from './components/toast/ToastContainer';
 
 function App() {
   const location = useLocation();
@@ -12,6 +13,7 @@ function App() {
 
   return (
     <div className={isAuthPage ? 'min-h-screen' : 'min-h-screen'}>
+      <ToastContainer />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

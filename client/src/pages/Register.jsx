@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Toast from '../components/Toast';
+import Toast from '../components/toast/ToastService';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -10,7 +10,6 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    const [toast, setToast] = useState(null);
     
     const { register } = useAuth();
     const navigate = useNavigate();
@@ -22,14 +21,14 @@ const Register = () => {
         if (password !== confirmPassword) {
             const errorMessage = 'Passwords do not match';
             setError(errorMessage);
-            setToast({ message: errorMessage, type: 'error' });
+            Toast.error(errorMessage, "auth");
             return;
         }
 
         if (password.length < 6) {
             const errorMessage = 'Password must be at least 6 characters';
             setError(errorMessage);
-            setToast({ message: errorMessage, type: 'error' });
+            Toast.error(errorMessage, "auth");
             return;
         }
 
@@ -37,27 +36,28 @@ const Register = () => {
 
         try {
             await register(username, email, password);
+            Toast.success("Account created successfully", "auth");
             navigate('/login');
         } catch (err) {
-            const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
-            setError(errorMessage);
-            setToast({ message: errorMessage, type: 'error' });
+            // Handle server errors (5xx) or network errors
+            if (err.response) {
+                // Server responded with error
+                const errorMessage = err.response.data?.message || 'Server error. Please try again later.';
+                setError(errorMessage);
+                Toast.error(errorMessage, "auth");
+            } else {
+                // Network error or server not responding
+                const errorMessage = 'Server error. Please try again later.';
+                setError(errorMessage);
+                Toast.error(errorMessage, "auth");
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    const closeToast = () => setToast(null);
-
     return (
         <div className="h-screen bg-[#f9fafb] flex font-poppins overflow-hidden">
-            {toast && (
-                <Toast 
-                    message={toast.message} 
-                    type={toast.type} 
-                    onClose={closeToast} 
-                />
-            )}
             {/* Left Side - Content */}
             <div className="w-full lg:w-1/2 flex flex-col h-full">
                 {/* Logo */}

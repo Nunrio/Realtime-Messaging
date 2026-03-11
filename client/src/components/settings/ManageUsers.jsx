@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Shield, Search, MoreVertical, User, Ban, VolumeX, Volume2, Archive, Edit, Eye, Check, AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import * as adminAPI from '../../api/user';
+import Toast from '../toast/ToastService';
 
 // Permission helpers
 const canMute = (currentUser, targetUser) => {
@@ -91,8 +92,9 @@ const ManageUsers = () => {
             setActionModal(null);
             setSelectedUser(null);
             setActionReason('');
+            Toast.success(`${selectedUser.username} has been muted`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to mute user');
+            Toast.error(err.response?.data?.message || 'Failed to mute user');
         } finally {
             setActionLoading(false);
         }
@@ -105,8 +107,9 @@ const ManageUsers = () => {
             await fetchUsers();
             setActionModal(null);
             setSelectedUser(null);
+            Toast.success(`${selectedUser.username} has been unmuted`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to unmute user');
+            Toast.error(err.response?.data?.message || 'Failed to unmute user');
         } finally {
             setActionLoading(false);
         }
@@ -120,8 +123,9 @@ const ManageUsers = () => {
             setActionModal(null);
             setSelectedUser(null);
             setActionReason('');
+            Toast.success(`${selectedUser.username} has been banned`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to ban user');
+            Toast.error(err.response?.data?.message || 'Failed to ban user');
         } finally {
             setActionLoading(false);
         }
@@ -134,8 +138,9 @@ const ManageUsers = () => {
             await fetchUsers();
             setActionModal(null);
             setSelectedUser(null);
+            Toast.success(`${selectedUser.username} has been unbanned`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to unban user');
+            Toast.error(err.response?.data?.message || 'Failed to unban user');
         } finally {
             setActionLoading(false);
         }
@@ -146,26 +151,20 @@ const ManageUsers = () => {
         if (actionLoading) return;
         
         if (!selectedUser || !selectedUser.id) {
-            console.error('No user selected for role change');
-            alert('Error: No user selected');
+            Toast.error('No user selected');
             return;
         }
-        
-        console.log(`Attempting to change role for user ${selectedUser.id} (${selectedUser.username}) to ${newRole}`);
         
         setActionLoading(true);
         try {
             const response = await adminAPI.changeUserRole(selectedUser.id, newRole);
-            console.log('Role change success:', response);
-            alert(`Successfully changed ${selectedUser.username}'s role to ${newRole}`);
+            Toast.success(`Successfully changed ${selectedUser.username}'s role to ${newRole}`);
             await fetchUsers();
             setActionModal(null);
             setSelectedUser(null);
         } catch (err) {
-            console.error('Failed to change role:', err);
-            console.error('Error response:', err.response);
             const errorMessage = err.response?.data?.message || err.message || 'Failed to change role';
-            alert(errorMessage);
+            Toast.error(errorMessage);
         } finally {
             setActionLoading(false);
         }
@@ -178,8 +177,9 @@ const ManageUsers = () => {
             await fetchUsers();
             setActionModal(null);
             setSelectedUser(null);
+            Toast.success(`${selectedUser.username} has been archived`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to archive user');
+            Toast.error(err.response?.data?.message || 'Failed to archive user');
         } finally {
             setActionLoading(false);
         }
@@ -192,8 +192,9 @@ const ManageUsers = () => {
             await fetchUsers();
             setActionModal(null);
             setSelectedUser(null);
+            Toast.success(`${selectedUser.username} has been unarchived`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Failed to unarchive user');
+            Toast.error(err.response?.data?.message || 'Failed to unarchive user');
         } finally {
             setActionLoading(false);
         }
