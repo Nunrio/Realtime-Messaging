@@ -79,6 +79,7 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
         age: user.age || null,
         bio: user.bio || '',
         profilePicture: user.profile_picture || '',
+        status: user.status || 'Online'
       };
       setFormData(initialData);
       setOriginalData(initialData);
@@ -98,7 +99,10 @@ const MyAccount = ({ user, onUnsavedChangesChange }) => {
   // Check for unsaved changes
   useEffect(() => {
     if (originalData) {
-      const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData);
+      const profileFields = ['displayName', 'gender', 'birthday', 'bio', 'profilePicture'];
+      const hasChanges = profileFields.some(field => 
+        formData[field] !== originalData[field]
+      );
       setShowUnsavedWarning(hasChanges);
       // Notify parent component of unsaved changes
       if (onUnsavedChangesChange) {

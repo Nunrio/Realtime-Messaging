@@ -8,6 +8,11 @@ export {
   Menu, 
   X,
   Settings,
-  LogOut
+  LogOut,
+  Circle,
+  Clock,
+  XCircle,
+  EyeOff
 } from 'lucide-react';
+
 

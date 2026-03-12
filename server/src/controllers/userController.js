@@ -7,17 +7,24 @@ const fs = require('fs');
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { display_name, gender, birthday, bio } = req.body;
+const { display_name, gender, birthday, bio, status } = req.body;
 
     // Build update object
     const updateData = {};
     if (display_name !== undefined) updateData.display_name = display_name || null;
     if (gender !== undefined) updateData.gender = gender;
     if (birthday !== undefined) updateData.birthday = birthday || null;
-    if (bio !== undefined) {
+if (bio !== undefined) {
       // Limit bio to 300 characters
       const bioText = bio.substring(0, 300);
       updateData.bio = bioText || null;
+    }
+
+    if (status !== undefined) {
+      const validStatuses = ['Online', 'away', 'do not disturb', 'invisible', 'Offline'];
+      if (validStatuses.includes(status)) {
+        updateData.status = status;
+      }
     }
 
     // Calculate age if birthday is provided
