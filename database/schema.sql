@@ -1,4 +1,3 @@
-
 -- Realtime Messaging Database Schema
 -- Create database first: CREATE DATABASE realtime_messaging;
 
@@ -17,7 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     age INT NULL,
     bio TEXT NULL,
     profile_picture VARCHAR(255) NULL,
-status ENUM('Offline', 'Online', 'away', 'do not disturb', 'invisible') DEFAULT 'Online',
+    status ENUM('Offline', 'Online', 'away', 'do not disturb', 'invisible') DEFAULT 'Online',
+    last_status ENUM('Offline', 'Online', 'away', 'do not disturb', 'invisible') DEFAULT 'Online',
     last_seen TIMESTAMP NULL,
     -- Moderation fields
     is_banned BOOLEAN DEFAULT FALSE,

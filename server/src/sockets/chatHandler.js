@@ -1,4 +1,5 @@
 
+const db = require('../config/db');
 const Message = require('../models/Message');
 const Group = require('../models/Group');
 const Note = require('../models/Note');
@@ -6,6 +7,7 @@ const User = require('../models/User');
 
 // Track online users: { groupId: { userId: { id, username, socketId } } }
 const onlineUsers = {};
+const userTimeouts = new Map();
 
 // Helper to get online users in a group
 const getOnlineUsersInGroup = (groupId) => {
@@ -38,34 +40,46 @@ const setupChatHandlers = (io) => {
         }
     });
 
-    io.on('connection', (socket) => {
-        console.log(`User connected: ${socket.user.username} (${socket.id})`);
+        io.on('connection', (socket) => {
+            console.log(`User connected: ${socket.user.username} (${socket.id})`);
 
-        // Check if user is banned or archived on connect
-        (async () => {
-            try {
-                const user = await User.findByIdWithModeration(socket.user.id);
-                if (user) {
-                    if (user.is_banned) {
-                        socket.emit('error', { message: 'Your account has been banned.' });
-                        socket.disconnect();
-                        return;
-                    }
-                    if (user.is_archived) {
-                        socket.emit('error', { message: 'Your account has been archived.' });
-                        socket.disconnect();
-                        return;
-                    }
-                    // Send current mute status
-                    socket.emit('user_status', {
-                        is_muted: user.is_muted,
-                        muted_until: user.muted_until
-                    });
-                }
-            } catch (error) {
-                console.error('Error checking user status on connect:', error);
+            // Cancel pending Offline timeout
+            const userId = socket.user.id;
+            if (userTimeouts.has(userId)) {
+                clearTimeout(userTimeouts.get(userId));
+                userTimeouts.delete(userId);
             }
-        })();
+
+            // Check if user is banned or archived on connect
+            (async () => {
+                try {
+                    const user = await User.findByIdWithModeration(socket.user.id);
+                    if (user) {
+if (user.is_banned) {
+    socket.emit('error', { message: 'Your account has been banned.' });
+    socket.disconnect();
+    return;
+}
+if (user.is_archived) {
+    socket.emit('error', { message: 'Your account has been archived.' });
+    socket.disconnect();
+    return;
+}
+if (user.status === 'Offline') {
+    socket.emit('error', { message: 'Session expired' });
+    socket.disconnect();
+    return;
+}
+                        // Send current mute status
+                        socket.emit('user_status', {
+                            is_muted: user.is_muted,
+                            muted_until: user.muted_until
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error checking user status on connect:', error);
+                }
+            })();
 
         // Join a group
         socket.on('join_group', async ({ groupId }) => {
@@ -238,8 +252,23 @@ const setupChatHandlers = (io) => {
         });
 
         // Handle disconnect
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async () => {
             console.log(`User disconnected: ${socket.user.username}`);
+            
+            // Schedule status to Offline after 30s timeout (cancelled on reconnect)
+            const userId = socket.user.id;
+            const timeoutId = setTimeout(async () => {
+                try {
+                    await db.query('UPDATE users SET status = ? WHERE id = ?', ['Offline', userId]);
+                    console.log(`User ${userId} set to Offline after timeout`);
+                    userTimeouts.delete(userId);
+                } catch (error) {
+                    console.error('Error setting Offline timeout:', error);
+                }
+            }, 30000); // 30 seconds
+            
+            userTimeouts.set(userId, timeoutId);
+            console.log(`Offline timeout scheduled for user ${userId}`);
             
             // Remove from all groups
             for (const groupId in onlineUsers) {
@@ -258,6 +287,7 @@ const setupChatHandlers = (io) => {
                 }
             }
         });
+
     });
 };
 

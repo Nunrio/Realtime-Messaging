@@ -4,15 +4,16 @@ const db = require('../config/db');
 class User {
     // Find user by ID
     static async findById(id) {
-        const sql = `SELECT id, username, display_name, email, role, gender, birthday, age, bio, profile_picture, status, last_seen, created_at 
+const sql = `SELECT id, username, display_name, email, role, gender, birthday, age, bio, profile_picture, status, last_status, last_seen, created_at 
                      FROM users WHERE id = ?`;
+
         const rows = await db.query(sql, [id]);
         return rows[0] || null;
     }
 
     // Find user by ID with password (for password verification)
     static async findByIdWithPassword(id) {
-        const sql = `SELECT id, username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_seen, created_at 
+const sql = `SELECT id, username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_status, last_seen, created_at 
                      FROM users WHERE id = ?`;
         const rows = await db.query(sql, [id]);
         return rows[0] || null;
@@ -48,8 +49,8 @@ class User {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         // Default values handled in SQL: role='user', gender='Prefer not to say', status='Online', profile_picture='/images/default-avatar.webp'
-        const sql = `INSERT INTO users (username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_seen) 
-                     VALUES (?, ?, ?, ?, 'user', 'Prefer not to say', NULL, NULL, NULL, '/images/default-avatar.webp', 'Online', NOW())`;
+const sql = `INSERT INTO users (username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_status, last_seen) 
+                     VALUES (?, ?, ?, ?, 'user', 'Prefer not to say', NULL, NULL, NULL, '/images/default-avatar.webp', 'Online', 'Online', NOW())`;
         const result = await db.query(sql, [
             username, 
             display_name || null, 
@@ -73,14 +74,14 @@ class User {
 
     // Get all users
     static async getAll() {
-        const sql = 'SELECT id, username, display_name, email, role, gender, birthday, age, bio, profile_picture, status, last_seen, created_at FROM users';
+const sql = 'SELECT id, username, display_name, email, role, gender, birthday, age, bio, profile_picture, status, last_status, last_seen, created_at FROM users';
         return await db.query(sql);
     }
 
     // Update user status
     static async updateStatus(userId, status) {
-        const sql = 'UPDATE users SET status = ?, last_seen = NOW() WHERE id = ?';
-        return await db.query(sql, [status, userId]);
+        const sql = 'UPDATE users SET status = ?, last_status = ?, last_seen = NOW() WHERE id = ?';
+        return await db.query(sql, [status, status, userId]);
     }
 
     // Update user profile
@@ -113,7 +114,7 @@ class User {
 
     // Get all users with optional filters (for admin)
     static async getAllWithFilters(search = '', role = '', status = '') {
-        let sql = `SELECT id, username, display_name, email, role, gender, profile_picture, status, 
+let sql = `SELECT id, username, display_name, email, role, gender, profile_picture, status, last_status,
                    is_banned, banned_at, banned_reason, is_muted, muted_until, is_archived, archived_at, 
                    last_seen, created_at FROM users WHERE 1=1`;
         const params = [];
@@ -163,6 +164,12 @@ class User {
                      FROM users WHERE id = ?`;
         const rows = await db.query(sql, [id]);
         return rows[0] || null;
+    }
+
+    // Restore user status from last_status on login
+    static async restoreStatus(userId) {
+        const sql = 'UPDATE users SET status = COALESCE(last_status, \"Online\") WHERE id = ?';
+        return await db.query(sql, [userId]);
     }
 
     // Determine user status based on moderation fields

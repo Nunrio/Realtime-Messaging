@@ -16,6 +16,7 @@ const SidebarFooter = ({ user, isExpanded, showMenu, onProfileClick, onLogout, o
   // Status configuration - pure color dots
   const statusConfig = {
     'Online': { color: 'bg-green-500', label: 'Online' },
+    'Offline': { color: 'bg-gray-500', label: 'Offline' },
     'away': { color: 'bg-orange-500', label: 'Away' },
     'do not disturb': { color: 'bg-red-500', label: 'Do Not Disturb' },
     'invisible': { color: 'bg-gray-500', label: 'Invisible' }

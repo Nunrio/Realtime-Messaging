@@ -24,6 +24,7 @@ if (bio !== undefined) {
       const validStatuses = ['Online', 'away', 'do not disturb', 'invisible', 'Offline'];
       if (validStatuses.includes(status)) {
         updateData.status = status;
+        updateData.last_status = status;
       }
     }
 

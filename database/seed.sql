@@ -4,8 +4,8 @@
 USE realtime_messaging;
 
 -- Insert admin user with password rmadmin@2026 (bcrypt hashed)
-INSERT INTO users (username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_seen) VALUES 
-('Alias', 'Admin User', 'admin@nunrio.dev', '$2b$10$OOfnlTPoghbL913pdDgYa.soCy2LyW6OUZPv7Y9QKV7Hnt/tzMlwC', 'founder', 'Prefer not to say', '2001-05-08', 24, 'Platform administrator with full access', '/images/logo.webp', 'do not disturb', NOW());
+INSERT INTO users (username, display_name, email, password, role, gender, birthday, age, bio, profile_picture, status, last_status, last_seen) VALUES 
+('Alias', 'Admin User', 'admin@nunrio.dev', '$2b$10$OOfnlTPoghbL913pdDgYa.soCy2LyW6OUZPv7Y9QKV7Hnt/tzMlwC', 'founder', 'Prefer not to say', '2001-05-08', 24, 'Platform administrator with full access', '/images/logo.webp', 'do not disturb', 'do not disturb', NOW());
 
 -- Insert sample group
 INSERT INTO groups (group_name, created_by) VALUES 
