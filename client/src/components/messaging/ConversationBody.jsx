@@ -313,7 +313,7 @@ const ConversationBody = ({ group }) => {
               {/* Message Input */}
               <form onSubmit={handleSendMessage} className="p-4 border-t">
                 {/* Mute Error Banner */}
-                {isMuted && (
+                {Boolean(isMuted) && (
                   <div className="mb-3 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-700 flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
